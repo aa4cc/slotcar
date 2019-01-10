@@ -1,0 +1,3 @@
+[submodule "matlab-zmq"]
+	path = matlab-zmq
+	url = https://github.com/fagg/matlab-zmq.git
