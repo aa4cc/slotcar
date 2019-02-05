@@ -1,5 +1,5 @@
 %% Run no compile
-function run_all (conf)
+function start (conf)
     
     
 

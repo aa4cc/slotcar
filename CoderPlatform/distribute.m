@@ -1,4 +1,4 @@
-function run_from_one (conf)
+function distribute (conf)
     
     tic();
     % fix config

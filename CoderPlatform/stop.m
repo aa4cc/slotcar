@@ -1,5 +1,5 @@
 %% Stop all executables
-function stop_all (conf)
+function stop (conf)
     
     if isfield(conf, 'root') == true
         set_param(strcat (conf.root, '_'),'SimulationCommand','stop')

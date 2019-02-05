@@ -18,9 +18,3 @@ conf.models(3).ip = '192.168.1.103';
 
 conf.models(4).name = 'M4';
 conf.models(4).ip = '192.168.1.104';
-
-%% for each board prepare a controller ====================================
-
-
-%help beagleboneblue
-%help slbuild
