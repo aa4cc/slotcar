@@ -13,7 +13,7 @@ function start (conf)
         
         if isfield (conf.models(i), 'external') && ~isempty(conf.models(i).external)&& conf.models(i).external
                 set_param(sys, 'SimulationMode', 'external');
-                set_param(sys,'SimulationCommand','start');
+                set_param(sys,'SimulationCommand', 'start');
                 open_system (sys)
         else
             fprintf ("Starting model at %s\n", ip);

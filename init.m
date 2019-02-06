@@ -8,11 +8,12 @@ if size( varargin ) > 2
 end
 
 addpath ./CoderPlatform
-addpath ./CoderPlatform/templates
 addpath ./CoderPlatform/drivers/IMU
-addpath "./CoderPlatform/drivers/I2C distance sensor"
+addpath './CoderPlatform/drivers/I2C distance sensor'
+
+mfilename('fullpath')
 
 if size(varargin) == 1
-    cd( join( ["experiments/" varargin{1}] ) );
+    cd( strcat("experiments/", varargin{1} ) );
 end
 

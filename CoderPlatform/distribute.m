@@ -50,7 +50,8 @@ function distribute (conf)
     
     if ~exist('tmp', 'dir')
         mkdir('tmp'); 
-        copyfile ('compile.*', 'tmp', 'f')
+        [dir,~,~] = fileparts(mfilename('fullpath'));
+        copyfile (fullfile(dir,'compile.*'), 'tmp', 'f')
         
     end
     
