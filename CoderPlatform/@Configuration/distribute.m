@@ -1,28 +1,7 @@
 function distribute(obj)
         
-    %% insert config defaults where missing
-    tic();   
-    rootModel = obj.Root;
-    if isfield(obj, 'commSampleTime') == false
-        obj.CommSampleTime = 0.1;
-    end
-    
-    if isfield(obj, 'debug') == true
-        debug = obj.Debug;
-    else
-        debug = false;
-    end
-
-    if isfield(obj, 'parallelCompilation') == false
-        obj.ParallelCompilation = false;
-    end
-    
-    if isfield(obj, 'port') == false
-        obj.Port = 25000;
-    end
-    
     %% Create top level Simulink model
-    
+    tic();   
     numberOfDevices = length(obj.Models);
     
     if exist (strcat(obj.Root, "_"), 'file') ~= 4
@@ -39,7 +18,7 @@ function distribute(obj)
     root = load_system (obj.Root);
 
     
-    if debug
+    if obj.Debug
        open_system (top);
     end
     
@@ -66,7 +45,7 @@ function distribute(obj)
     target_handles = ones (1, numberOfDevices);
 
     for i = 1:numberOfDevices
-        target_handles(i) = getSimulinkBlockHandle(strcat(rootModel, '_/', obj.Models(i).name));
+        target_handles(i) = getSimulinkBlockHandle(strcat(obj.Root, '_/', obj.Models(i).Name));
     end
 
     % Check port dimensions and data type
@@ -86,7 +65,7 @@ function distribute(obj)
 
     % Create target subsystems
 
-    createDeviceModels (obj, directs, inportDimensions, inportTypes, target_handles, debug)
+    createDeviceModels (obj, directs, inportDimensions, inportTypes, target_handles, obj.Debug)
     
     % Run
     % Open all scopes
@@ -97,10 +76,10 @@ function distribute(obj)
         open_system (scopes(i));
     end
     % Run top-level model
-    if ~debug
-        set_param(strcat (rootModel, '_'), 'StopTime', 'inf')
-        set_param(strcat (rootModel, '_'), 'SimulationMode', 'normal')
-        set_param(strcat (rootModel, '_'),'SimulationCommand','start')
+    if ~obj.Debug
+        set_param(strcat (obj.Root, '_'), 'StopTime', 'inf')
+        set_param(strcat (obj.Root, '_'), 'SimulationMode', 'normal')
+        set_param(strcat (obj.Root, '_'),'SimulationCommand','start')
     end
     cd (oldFolder);
     
@@ -109,7 +88,7 @@ end
 
 
 
-function [inportDimensions, outportDimensions, inportTypes, outportTypes] = portDimensions (conf, top)
+function [inportDimensions, outportDimensions, inportTypes, outportTypes] = portDimensions (obj, top)
 
     % remove blocks that can be only once
     blocks = Simulink.findBlocksOfType(top,'MATLABSystem');
@@ -134,10 +113,10 @@ function [inportDimensions, outportDimensions, inportTypes, outportTypes] = port
     % get dimensions
     
     param = 'compile';%#ok
-    cmd = [[conf.root '_'], ' ([],[],[], ' 'param' ' ); ' ];
+    cmd = [[obj.Root '_'], ' ([],[],[], ' 'param' ' ); ' ];
     eval (cmd);
     
-    numberOfDevices = length(conf.models);
+    numberOfDevices = length(obj.Models);
     
     inportDimensions = cell (numberOfDevices, 1);
     outportDimensions = cell (numberOfDevices, 1);
@@ -148,7 +127,7 @@ function [inportDimensions, outportDimensions, inportTypes, outportTypes] = port
     
     for i = 1:numberOfDevices
 
-        model = strcat (conf.root, '_/', conf.models(i).name);
+        model = strcat (obj.Root, '_/', obj.Models(i).Name);
 
         % mabe use ph = get_param(model,'PortHandles');
         % ph.Inport, ph.Outport
@@ -212,19 +191,19 @@ function [inportDimensions, outportDimensions, inportTypes, outportTypes] = port
     end
     
     param = 'term'; %#ok
-    cmd = [[conf.root '_'], ' ([],[],[], ' 'param' ' ); ' ];
+    cmd = [[obj.Root '_'], ' ([],[],[], ' 'param' ' ); ' ];
     eval (cmd);
 
 end
 
-function directs = directConnections (conf, target_handles)
+function directs = directConnections (obj, target_handles)
 
     % searches which connection goes straight from one target to another
     directs = [];
-    numberOfDevices = length(conf.models);
+    numberOfDevices = length(obj.Models);
     
     for i =1:numberOfDevices
-        model = strcat (conf.root, '_/', conf.models(i).name);
+        model = strcat (obj.Root, '_/', obj.Models(i).Name);
         my_handle = getSimulinkBlockHandle (model);
         m = find_system (model);
         pc = get_param (m{1}, 'PortConnectivity');
@@ -254,20 +233,20 @@ function directs = directConnections (conf, target_handles)
     end
 end
 
-function topComunication (conf, directs, outportDimensions, outportTypes)
+function topComunication (obj, directs, outportDimensions, outportTypes)
 
 
-    port = conf.port;
-    numberOfDevices = length(conf.models);
+    port = obj.Port;
+    numberOfDevices = length(obj.Models);
 
     for i =1:numberOfDevices
 
-        model = strcat (conf.root, '_/', conf.models(i).name);
+        model = strcat (obj.Root, '_/', obj.Models(i).Name);
         my_handle = getSimulinkBlockHandle (model);
 
         % delete lines
         lines = find_system(model,'FindAll','on','type','line');
-        ip = conf.models(i).ip;
+        ip = obj.Models(i).Ipv4;
 
         for ii = lines
             delete_line (ii)
@@ -320,7 +299,7 @@ function topComunication (conf, directs, outportDimensions, outportTypes)
                 set_param (bh, 'localPort', string(port));
                 set_param (bh, 'signalDatatype', outportTypes{i}{ii});
                 set_param (bh, 'dims', num2str(outportDimensions{i}(ii)));
-                set_param (bh, 'sampleTime', string(conf.commSampleTime));
+                set_param (bh, 'sampleTime', string(obj.CommSampleTime));
                 
                 %commSampleTime
                 tmp = extractAfter (out{ii}, model);
@@ -332,25 +311,25 @@ function topComunication (conf, directs, outportDimensions, outportTypes)
     end
 end
 
-function createDeviceModels (conf, directs, inportDimensions, inportTypes, target_handles, debug)
+function createDeviceModels (obj, directs, inportDimensions, inportTypes, target_handles, debug)
 
-    port = conf.port;
-    portDirect = conf.port + 200;
-    numberOfDevices = length(conf.models);
+    port = obj.Port;
+    portDirect = obj.Port + 200;
+    numberOfDevices = length(obj.Models);
 
     
     for i =1:numberOfDevices
         tic ();
-        model = strcat (conf.root, '/', conf.models(i).name);
-        my_handle = getSimulinkBlockHandle (strcat (conf.root, '_/', conf.models(i).name));
+        model = strcat (obj.Root, '/', obj.Models(i).Name);
+        my_handle = getSimulinkBlockHandle (strcat (obj.Root, '_/', obj.Models(i).Name));
         % Copy subsystem to new model
 
         
-        if exist (conf.models(i).name, 'file') ~= 4
-            sys = new_system (conf.models(i).name);
+        if exist (obj.Models(i).Name, 'file') ~= 4
+            sys = new_system (obj.Models(i).Name);
         else
             fprintf ("Exists, deleting content.\n");
-            sys = load_system (conf.models(i).name);
+            sys = load_system (obj.Models(i).Name);
             Simulink.BlockDiagram.deleteContents(sys);            
         end
 
@@ -360,7 +339,7 @@ function createDeviceModels (conf, directs, inportDimensions, inportTypes, targe
         Simulink.SubSystem.copyContentsToBlockDiagram (model, sys);
 
         %Copy configuration of parent model
-        rootConfig = getActiveConfigSet (conf.root);
+        rootConfig = getActiveConfigSet (obj.Root);
         config = attachConfigSetCopy (sys, rootConfig, true);
         setActiveConfigSet ( sys, config.name);
 
@@ -391,7 +370,7 @@ function createDeviceModels (conf, directs, inportDimensions, inportTypes, targe
 
             set_param (in{ii}, 'signalDatatype', inportTypes{i}{ii});
             set_param (in{ii}, 'dims', num2str(inportDimensions{i}(ii)));
-            set_param (in{ii}, 'sampleTime', string(conf.commSampleTime));
+            set_param (in{ii}, 'sampleTime', string(obj.CommSampleTime));
 
         end
 
@@ -416,8 +395,8 @@ function createDeviceModels (conf, directs, inportDimensions, inportTypes, targe
                     count = count + 1;
                     name = get_param (directs (iii, 2), 'Name');
 
-                    for iiii = 1: length(conf.models)
-                        if (conf.models (iiii).name == name)
+                    for iiii = 1: length(obj.Models)
+                        if (obj.Models (iiii).name == name)
                             ips(end  + 1) = iiii; %#ok
 
                         end
@@ -432,9 +411,9 @@ function createDeviceModels (conf, directs, inportDimensions, inportTypes, targe
                 for j = 1:count
                     pc = get_param (out{ii}, 'PortConnectivity');
                     name = get_param (pc.SrcBlock, 'Name');
-                    bh = add_block ('beaglebonebluelib/UDP Send', strcat(conf.models(i).name, '/SendDirect_', string(ii), '_', string(j)));
+                    bh = add_block ('beaglebonebluelib/UDP Send', strcat(obj.Models(i).Name, '/SendDirect_', string(ii), '_', string(j)));
                     set_param (bh, 'remotePort', string(portDirect + portOffset(j)));
-                    set_param (bh, 'remoteUrl', strcat ("'", conf.models(ips(j)).ip, "'"));
+                    set_param (bh, 'remoteUrl', strcat ("'", obj.Models(ips(j)).Ipv4, "'"));
                     
                     add_line (sys, strcat(name, '/1'), strcat('SendDirect_', string(ii), '_', string(j), '/1'));
                 end
@@ -456,7 +435,7 @@ function createDeviceModels (conf, directs, inportDimensions, inportTypes, targe
         end
         save_system(sys);
         
-        ip = conf.models(i).ip;
+        ip = obj.Models(i).Ipv4;
 
         if ~debug
             try
@@ -466,36 +445,36 @@ function createDeviceModels (conf, directs, inportDimensions, inportTypes, targe
                continue;
             end
             
-                if isfield (conf.models(i), 'external') && ~isempty(conf.models(i).external) && conf.models(i).external
+                if isfield (obj.Models(i), 'external') && ~isempty(obj.Models(i).External) && obj.Models(i).External
                     % run in external mode
                     set_param(sys, 'SimulationMode', 'external');
                     set_param(sys,'SimulationCommand','start');
                     open_system (sys);
                 else
                     % normal build
-                    if conf.parallelCompilation
+                    if obj.ParallelCompilation
                         % paralel compilation
                         set_param(sys, 'GenCodeOnly', 'on');
-                        fprintf ('Building %s\n',  char(conf.models(i).name));
+                        fprintf ('Building %s\n',  char(obj.Models(i).Name));
                         txt = evalc ('slbuild (sys)');
 
                         fprintf ('Code generation completed.\n%s\n', txt);
 
                         % checks for changes, runs model if there are not
                         if contains(txt, 'is up to date because no structural, parameter or code replacement library changes were found.')
-                            fprintf ('Model %s has no new code, just starting old application.\n',  char(conf.models(i).name));
-                            runModel(b, conf.models(i).name)
+                            fprintf ('Model %s has no new code, just starting old application.\n',  char(obj.Models(i).Name));
+                            runModel(b, obj.Models(i).Name)
                         else
 
-                            fprintf ('Model %s has new code, processing changes.\n',  char(conf.models(i).name));
+                            fprintf ('Model %s has new code, processing changes.\n',  char(obj.Models(i).Name));
 
-                            bi = load ([char(conf.models(i).name), '_ert_rtw/buildInfo.mat']);
+                            bi = load ([char(obj.Models(i).Name), '_ert_rtw/buildInfo.mat']);
                             packNGo(bi.buildInfo,{'packType', 'flat'});
 
                             if getenv('OS') == 'Windows_NT'
-                                system ( ['compile.bat ', char(conf.models(i).name), ' ', ip, ' &']);
+                                system ( ['compile.bat ', char(obj.Models(i).Name), ' ', ip, ' &']);
                             else
-                                system ( ['compile.bash ', char(conf.models(i).name), ' ', ip, ' &']);                
+                                system ( ['compile.bash ', char(obj.Models(i).Name), ' ', ip, ' &']);                
                             end
                         end
 

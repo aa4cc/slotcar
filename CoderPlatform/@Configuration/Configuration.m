@@ -1,4 +1,4 @@
-classdef Configuration
+classdef Configuration < handle
     %SETTINGS Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -18,7 +18,7 @@ classdef Configuration
         distribute(obj)
         start(obj)
         stop(obj)
-        add(obj)
+        add(obj,val)
         
     end
 end
