@@ -9,7 +9,7 @@
                 "C:/Program Files/MATLAB/R2018a/extern/include",
                 "C:/Program Files/MATLAB/R2018a/simulink/include",
                 "C:/Program Files/MATLAB/R2018a/rtw/c/src",
-                "C:/Program Files (x86)/nng/include/nng"
+                "C:/Program Files (x86)/nng/include"
             ],
             "defines": [
                 "_DEBUG",

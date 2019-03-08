@@ -3,7 +3,9 @@ classdef Configuration < handle
     %   Detailed explanation goes here
     
     properties
-        Root
+        Folder
+        RootModel
+        MatlabIpv4
         Models(1,:) Model
         Debug = false
         ParallelCompilation = false
@@ -12,9 +14,6 @@ classdef Configuration < handle
     end
     
     methods
-        function obj = Configuration(root)
-            obj.Root = root;
-        end
         distribute(obj)
         start(obj)
         stop(obj)

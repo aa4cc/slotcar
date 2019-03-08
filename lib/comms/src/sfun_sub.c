@@ -7,8 +7,8 @@
 #define SAMPLE_TIME_P   2
 #define NUM_PRMS        3
 
-#include <nng.h>
-#include <protocol/pair0/pair.h>
+#include <nng/nng.h>
+#include <nng/protocol/pair0/pair.h>
 #include "simstruc.h"
 #include "matrix.h"
 
