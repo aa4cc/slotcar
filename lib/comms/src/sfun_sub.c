@@ -10,7 +10,6 @@
 #include <nng/nng.h>
 #include <nng/protocol/pair0/pair.h>
 #include "simstruc.h"
-#include "matrix.h"
 
 static bool isPositiveRealDoubleParam(const mxArray *p)
 {
@@ -132,14 +131,18 @@ static void mdlInitializeSampleTimes(SimStruct *S)
   static void mdlSetupRuntimeResources(SimStruct *S)
   {
       nng_socket *sock = malloc(sizeof(nng_socket));
+      const mxArray *url_param = ssGetSFcnParam(S,HOST_URL_P);
+      size_t n = mxGetM(url_param) + 1;
+      char url[n];
       int rv;
-
-      char *url = mxArrayToString(ssGetSFcnParam(S,HOST_URL_P));
 
       if ((rv = nng_pair0_open(sock)) < 0) {
         ssSetErrorStatus(S,"Unable to open socket.");
         return;
       }
+
+      mxGetString(url_param, url, n);
+
       if ((rv = nng_dial(*sock, url, NULL, NNG_FLAG_NONBLOCK)) < 0) {
         ssSetErrorStatus(S,"Unable to listen on host.");
         return;

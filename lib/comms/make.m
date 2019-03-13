@@ -1,6 +1,5 @@
 %% specify path to libraries
 nngdir = 'C:\Program Files (x86)\nng';
-sdklibdir = 'C:\Program Files\Microsoft SDKs\Windows\v7.1\Lib';
 
 %% build
 p = simulinkproject;

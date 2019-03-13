@@ -4,15 +4,15 @@ function distribute(obj)
 %   loads and runs each model. 
 
     p = simulinkproject; % project handle
-    nd = length(obj.Models); % number of boards
-    topModel = strcat(obj.RootModel, "_");
-    oldFolder = cd(obj.Folder);
+    nd = length(obj.Boards); % number of boards
+    topModel = strcat(obj.RootModel,"_"); % name of the top execution model
+    oldFolder = cd(obj.Folder); % work in folder specified by configuration
 
     % ######## Create distribution folder with neccessary files ###########
 
     if ~exist('distribution', 'dir')
         mkdir('distribution');
-        copyFiles = fullfile(p.RootFolder,'lib','compile.*');
+        copyFiles = fullfile(p.RootFolder, 'lib', 'compile.*');
         copyfile(copyFiles, 'distribution', 'f');
     end
 
@@ -46,7 +46,7 @@ function distribute(obj)
         targetHandles = ones(1, nd);
         for i = 1:nd
             targetHandles(i) = getSimulinkBlockHandle( ...
-                strcat(topModel, '/', obj.Models(i).Name));
+                strcat(topModel, '/', obj.Boards(i).Name));
         end
 
         % Check port dimensions and data type
@@ -147,7 +147,7 @@ function [inportDimensions, ...
     eval (cmd);
     
     % Initialize output value cells
-    nd = length(obj.Models);
+    nd = length(obj.Boards);
     
     inportDimensions = cell (nd, 1);
     outportDimensions = cell (nd, 1);
@@ -158,7 +158,7 @@ function [inportDimensions, ...
     
     for i = 1:nd
 
-        model = strcat (obj.RootModel, '_/', obj.Models(i).Name);
+        model = strcat (obj.RootModel, '_/', obj.Boards(i).Name);
         ph = get_param(model,'PortHandles');
         
         % find inport dimensions
@@ -231,8 +231,8 @@ function directs = directConnections(obj, target_handles)
 
     directs = [];
     
-    for i = 1:length(obj.Models)
-        model = strcat(obj.RootModel, '_/', obj.Models(i).Name);
+    for i = 1:length(obj.Boards)
+        model = strcat(obj.RootModel, '_/', obj.Boards(i).Name);
         my_handle = getSimulinkBlockHandle(model);
         m = find_system(model);
         pc = get_param(m{1}, 'PortConnectivity');
@@ -264,12 +264,12 @@ function topCommunication (obj, directs)
 
     port = obj.Port;
     Ts = obj.CommSampleTime;
-    nd = length(obj.Models);
+    nd = length(obj.Boards);
 
     for i =1:nd
         
-        ip = obj.Models(i).Ipv4;
-        model = strcat (obj.RootModel, '_/', obj.Models(i).Name);
+        ip = obj.Boards(i).Ipv4;
+        model = strcat (obj.RootModel, '_/', obj.Boards(i).Name);
         modelHandle = getSimulinkBlockHandle(model);
 
         % Delete lines inside the board subsystem in top level model
@@ -359,17 +359,17 @@ function createDeviceModels (obj, directs, target_handles, debug)
     port = obj.Port;
     portDirect = obj.Port + 200;
 
-    for i =1:length(obj.Models)
+    for i =1:length(obj.Boards)
         tic ();
-        model = strcat(obj.RootModel, '/', obj.Models(i).Name);
+        model = strcat(obj.RootModel, '/', obj.Boards(i).Name);
         modelHandle = getSimulinkBlockHandle( ...
-            strcat (obj.RootModel, '_/', obj.Models(i).Name));
+            strcat (obj.RootModel, '_/', obj.Boards(i).Name));
         
         % Copy subsystem to new model
-        if exist (obj.Models(i).Name, 'file') ~= 4
-            sys = new_system(obj.Models(i).Name);
+        if exist (obj.Boards(i).Name, 'file') ~= 4
+            sys = new_system(obj.Boards(i).Name);
         else
-            sys = load_system(obj.Models(i).Name);
+            sys = load_system(obj.Boards(i).Name);
             Simulink.BlockDiagram.deleteContents(sys);            
         end
 
@@ -431,8 +431,8 @@ function createDeviceModels (obj, directs, target_handles, debug)
                     count = count + 1;
                     name = get_param (directs (iii, 2), 'Name');
 
-                    for iiii = 1: length(obj.Models)
-                        if (obj.Models (iiii).name == name)
+                    for iiii = 1: length(obj.Boards)
+                        if (obj.Boards (iiii).name == name)
                             ips(end  + 1) = iiii; %#ok
 
                         end
@@ -445,8 +445,8 @@ function createDeviceModels (obj, directs, target_handles, debug)
                 for j = 1:count
                     pc = get_param (out{ii}, 'PortConnectivity');
                     name = get_param (pc.SrcBlock, 'Name');
-                    bh = add_block ('comms_lib/Publishing', strcat(obj.Models(i).Name, '/SendDirect_', string(ii), '_', string(j)));
-                    set_param (bh, 'hosturl', string(sprintf ('''tcp://%s:%u''',obj.Models(ips(j)).Ipv4,portDirect + portOffset(j))));
+                    bh = add_block ('comms_lib/Publishing', strcat(obj.Boards(i).Name, '/SendDirect_', string(ii), '_', string(j)));
+                    set_param (bh, 'hosturl', string(sprintf ('''tcp://%s:%u''',obj.Boards(ips(j)).Ipv4,portDirect + portOffset(j))));
                     set_param (bh, 'portnum', string(portDirect + portOffset(j)));
                
                     add_line (sys, strcat(name, '/1'), strcat('SendDirect_', string(ii), '_', string(j), '/1'));
@@ -467,7 +467,7 @@ function createDeviceModels (obj, directs, target_handles, debug)
         end
         save_system(sys);
         
-        ip = obj.Models(i).Ipv4;
+        ip = obj.Boards(i).Ipv4;
 
         if ~debug
             try
@@ -477,9 +477,9 @@ function createDeviceModels (obj, directs, target_handles, debug)
                continue;
             end
             
-                if isfield (obj.Models(i), 'external') ...
-                && ~isempty(obj.Models(i).External) ... 
-                && obj.Models(i).External
+                if isfield (obj.Boards(i), 'external') ...
+                && ~isempty(obj.Boards(i).External) ... 
+                && obj.Boards(i).External
                     % run in external mode
                     set_param(sys, 'SimulationMode', 'external');
                     set_param(sys, 'SimulationCommand', 'start');
@@ -487,7 +487,7 @@ function createDeviceModels (obj, directs, target_handles, debug)
                 else
                     if obj.ParallelCompilation
                         set_param(sys, 'GenCodeOnly', 'on');
-                        fprintf ('Building %s\n',  char(obj.Models(i).Name));
+                        fprintf ('Building %s\n',  char(obj.Boards(i).Name));
                         txt = evalc ('slbuild (sys)');
 
                         fprintf ('Code generation completed.\n%s\n', txt);
@@ -495,19 +495,19 @@ function createDeviceModels (obj, directs, target_handles, debug)
                         % Check for changes, run model if there are none
                         if contains(txt, 'is up to date because no structural, parameter or code replacement library changes were found.')
                             fprintf('@@@ Model %s has no new code, just starting old application.\n',  ...
-                                    char(obj.Models(i).Name));
-                            runModel(b, obj.Models(i).Name)
+                                    char(obj.Boards(i).Name));
+                            runModel(b, obj.Boards(i).Name)
                         else
                             fprintf('@@@ Model %s has new code, processing changes.\n', ...
-                                    char(obj.Models(i).Name));
+                                    char(obj.Boards(i).Name));
 
-                            bi = load([char(obj.Models(i).Name), '_ert_rtw/buildInfo.mat']);
+                            bi = load([char(obj.Boards(i).Name), '_ert_rtw/buildInfo.mat']);
                             packNGo(bi.buildInfo,{'packType', 'flat'});
 
                             if strcmp(getenv('OS'), 'Windows_NT')
-                                system( ['compile.bat ', char(obj.Models(i).Name), ' ', ip, ' &'] );
+                                system( ['compile.bat ', char(obj.Boards(i).Name), ' ', ip, ' &'] );
                             else
-                                system( ['compile.bash ', char(obj.Models(i).Name), ' ', ip, ' &'] );                
+                                system( ['compile.bash ', char(obj.Boards(i).Name), ' ', ip, ' &'] );                
                             end
                         end
 

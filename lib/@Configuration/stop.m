@@ -7,20 +7,23 @@ function stop(obj)
 
 
 
-    for i =1:length(obj.Models)
+    for i =1:length(obj.Boards)
         tic ();
-        ip = obj.Models(i).Ipv4;
+        board = obj.Boards(i);
+        ip = board.Ipv4;
         try
             b = beagleboneblue (ip, 'debian', 'temppwd');
 
-            if isfield (obj.Models(i), 'external') && ~isempty(obj.Models(i).external) && obj.Models(i).external
+            if isfield (board, 'External') ...
+                    && ~isempty(board.External) ...
+                    && board.External
                 set_param(sys,'SimulationCommand','stop');
             else
-                runs = isModelRunning(b, obj.Models(i).name);
+                runs = isModelRunning(b, board.ModelName);
                 if runs 
                     fprintf ("Stopping model at %s\n", ip);
                     % psmisc must be installed at target to perform this operation
-                    stopModel(b, obj.Models(i).name)
+                    stopModel(b, board.ModelName)
                 end
             end
             toc()

@@ -1,20 +1,23 @@
 %% Run no compile
 function start(obj)
     
-    for i =1:length(obj.Models)
+    for i =1:length(obj.Boards)
         tic ()
-        ip = obj.Models(i).Ipv4;
+        board = obj.Boards(i);
+        ip = board.Ipv4;
         try
         b = beagleboneblue (ip, 'debian', 'temppwd');
 
         
-        if isfield (obj.Models(i), 'external') && ~isempty(obj.Models(i).external)&& obj.Models(i).external
+        if isfield (board, 'External') ...
+                && ~isempty(board.External) ...
+                && board.External
                 set_param(sys, 'SimulationMode', 'external');
                 set_param(sys,'SimulationCommand', 'start');
                 open_system (sys)
         else
             fprintf ("Starting model at %s\n", ip);
-            runModel(b, obj.Models(i).name)
+            runModel(b, board.ModelName)
         end
         toc()
         

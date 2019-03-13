@@ -6,7 +6,7 @@ classdef Configuration < handle
         Folder
         RootModel
         MatlabIpv4
-        Models(1,:) Model
+        Boards(1,:) Board
         Debug = false
         ParallelCompilation = false
         CommSampleTime = 0.1
