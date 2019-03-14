@@ -22,7 +22,7 @@ function distribute(obj)
 
     try
         % Open top, root and subsys models
-        if exist(topmodel, 'file') ~= 4
+        if exist(topModel, 'file') ~= 4
             top = new_system (strcat(obj.RootModel, "_"));
         else
             set_param(topModel, 'SimulationCommand','stop')
@@ -46,7 +46,7 @@ function distribute(obj)
         targetHandles = ones(1, nd);
         for i = 1:nd
             targetHandles(i) = getSimulinkBlockHandle( ...
-                strcat(topModel, '/', obj.Boards(i).Name));
+                strcat(topModel, '/', obj.Boards(i).ModelName));
         end
 
         % Check port dimensions and data type
@@ -56,7 +56,7 @@ function distribute(obj)
         directs = directConnections(obj, targetHandles);
 
         % Replace subsystem content with comunication blocks
-        topCommunication(obj, directs, outDims, outTypes);
+        topCommunication(obj, directs);
 
         % Open model window if debugging
         if obj.Debug
@@ -83,8 +83,6 @@ function distribute(obj)
     try
         createDeviceModels(obj, ...
             directs, ...
-            inDims, ...
-            inTypes, ...
             targetHandles, ...
             obj.Debug)
     catch ME
@@ -158,7 +156,7 @@ function [inportDimensions, ...
     
     for i = 1:nd
 
-        model = strcat (obj.RootModel, '_/', obj.Boards(i).Name);
+        model = strcat (obj.RootModel, '_/', obj.Boards(i).ModelName);
         ph = get_param(model,'PortHandles');
         
         % find inport dimensions
@@ -232,7 +230,7 @@ function directs = directConnections(obj, target_handles)
     directs = [];
     
     for i = 1:length(obj.Boards)
-        model = strcat(obj.RootModel, '_/', obj.Boards(i).Name);
+        model = strcat(obj.RootModel, '_/', obj.Boards(i).ModelName);
         my_handle = getSimulinkBlockHandle(model);
         m = find_system(model);
         pc = get_param(m{1}, 'PortConnectivity');
@@ -269,7 +267,7 @@ function topCommunication (obj, directs)
     for i =1:nd
         
         ip = obj.Boards(i).Ipv4;
-        model = strcat (obj.RootModel, '_/', obj.Boards(i).Name);
+        model = strcat (obj.RootModel, '_/', obj.Boards(i).ModelName);
         modelHandle = getSimulinkBlockHandle(model);
 
         % Delete lines inside the board subsystem in top level model
@@ -361,20 +359,20 @@ function createDeviceModels (obj, directs, target_handles, debug)
 
     for i =1:length(obj.Boards)
         tic ();
-        model = strcat(obj.RootModel, '/', obj.Boards(i).Name);
-        modelHandle = getSimulinkBlockHandle( ...
-            strcat (obj.RootModel, '_/', obj.Boards(i).Name));
+        boardModel = obj.Boards(i).ModelName;
+        modelToReplace = strcat(obj.RootModel, '/', boardModel);
+        modelHandle = getSimulinkBlockHandle(modelToReplace);
         
         % Copy subsystem to new model
-        if exist (obj.Boards(i).Name, 'file') ~= 4
-            sys = new_system(obj.Boards(i).Name);
+        if exist (boardModel, 'file') ~= 4
+            sys = new_system(boardModel);
         else
-            sys = load_system(obj.Boards(i).Name);
+            sys = load_system(boardModel);
             Simulink.BlockDiagram.deleteContents(sys);            
         end
 
         % Copy contents from the subsystem in the root model
-        Simulink.SubSystem.copyContentsToBlockDiagram (model, sys);
+        Simulink.SubSystem.copyContentsToBlockDiagram (modelToReplace, sys);
 
         %Copy configuration of root model
         rootConfig = getActiveConfigSet (obj.RootModel);
@@ -432,7 +430,7 @@ function createDeviceModels (obj, directs, target_handles, debug)
                     name = get_param (directs (iii, 2), 'Name');
 
                     for iiii = 1: length(obj.Boards)
-                        if (obj.Boards (iiii).name == name)
+                        if (obj.Boards(iiii).ModelName == name)
                             ips(end  + 1) = iiii; %#ok
 
                         end
@@ -445,7 +443,7 @@ function createDeviceModels (obj, directs, target_handles, debug)
                 for j = 1:count
                     pc = get_param (out{ii}, 'PortConnectivity');
                     name = get_param (pc.SrcBlock, 'Name');
-                    bh = add_block ('comms_lib/Publishing', strcat(obj.Boards(i).Name, '/SendDirect_', string(ii), '_', string(j)));
+                    bh = add_block ('comms_lib/Publishing', strcat(boardModel, '/SendDirect_', string(ii), '_', string(j)));
                     set_param (bh, 'hosturl', string(sprintf ('''tcp://%s:%u''',obj.Boards(ips(j)).Ipv4,portDirect + portOffset(j))));
                     set_param (bh, 'portnum', string(portDirect + portOffset(j)));
                
@@ -487,7 +485,7 @@ function createDeviceModels (obj, directs, target_handles, debug)
                 else
                     if obj.ParallelCompilation
                         set_param(sys, 'GenCodeOnly', 'on');
-                        fprintf ('Building %s\n',  char(obj.Boards(i).Name));
+                        fprintf ('Building %s\n',  char(boardModel));
                         txt = evalc ('slbuild (sys)');
 
                         fprintf ('Code generation completed.\n%s\n', txt);
@@ -495,19 +493,19 @@ function createDeviceModels (obj, directs, target_handles, debug)
                         % Check for changes, run model if there are none
                         if contains(txt, 'is up to date because no structural, parameter or code replacement library changes were found.')
                             fprintf('@@@ Model %s has no new code, just starting old application.\n',  ...
-                                    char(obj.Boards(i).Name));
-                            runModel(b, obj.Boards(i).Name)
+                                    char(boardModel));
+                            runModel(b, boardModel)
                         else
                             fprintf('@@@ Model %s has new code, processing changes.\n', ...
-                                    char(obj.Boards(i).Name));
+                                    char(boardModel));
 
-                            bi = load([char(obj.Boards(i).Name), '_ert_rtw/buildInfo.mat']);
+                            bi = load([char(boardModel), '_ert_rtw/buildInfo.mat']);
                             packNGo(bi.buildInfo,{'packType', 'flat'});
 
                             if strcmp(getenv('OS'), 'Windows_NT')
-                                system( ['compile.bat ', char(obj.Boards(i).Name), ' ', ip, ' &'] );
+                                system( ['compile.bat ', char(boardModel), ' ', ip, ' &'] );
                             else
-                                system( ['compile.bash ', char(obj.Boards(i).Name), ' ', ip, ' &'] );                
+                                system( ['compile.bash ', char(boardModel), ' ', ip, ' &'] );                
                             end
                         end
 
@@ -523,7 +521,7 @@ function createDeviceModels (obj, directs, target_handles, debug)
         end
         save_system(sys);
         
-        fprintf("@@@ Built and started model %s at %s", model, ip);
+        fprintf("@@@ Built and started model %s at %s\n", boardModel, ip);
         toc ();
     end
 end
