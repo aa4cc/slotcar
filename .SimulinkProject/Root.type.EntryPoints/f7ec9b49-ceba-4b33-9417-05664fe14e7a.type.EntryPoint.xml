@@ -1,2 +1,2 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<Info Type="Basic" GroupUUID="495e030b-25e0-428c-98b7-5b7b11ca46ce" Visible="1" Icon="" File="utils/setSimulinkTmpFolders.m" Name="Set Folders" />
+<Info Type="StartUp" GroupUUID="495e030b-25e0-428c-98b7-5b7b11ca46ce" Visible="1" Icon="" File="utils/setSimulinkTmpFolders.m" Name="Set Folders" />
