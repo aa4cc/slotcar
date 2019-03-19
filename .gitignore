@@ -1,33 +1,58 @@
 ##---------------------------------------------------
-# Workplace directory files
+# Project
 ##---------------------------------------------------
 
 experiments/*
 tmpwork/*
 tmpcode/*
 
-
 ##---------------------------------------------------
-# MATLAB default .gitignore
+# MATLAB
 ##---------------------------------------------------
 
-# Editor autosave files
-*~
+# Windows default autosave extension
 *.asv
+
+# OSX / *nix default autosave extension
+*.m~
+
 # Compiled MEX binaries (all platforms)
 *.mex*
 
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Simulink code generation folders
+slprj/
+sccprj/
+
+# Matlab code generation folders
+codegen/
+
+# Simulink autosave extension
+*.autosave
+
+# Octave session info
+octave-workspace
 
 ##---------------------------------------------------
-# Windows default .gitignore
+# Windows
 ##---------------------------------------------------
 
-# Windows image file caches
+# Windows thumbnail cache files
 Thumbs.db
 ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
 
 # Folder config file
-Desktop.ini
+[Dd]esktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
@@ -35,26 +60,21 @@ $RECYCLE.BIN/
 # Windows Installer files
 *.cab
 *.msi
+*.msix
 *.msm
 *.msp
 
 # Windows shortcuts
 *.lnk
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-
-# C extensions
-*.so
-
-
 ##---------------------------------------------------
 # Linux default .gitignore
 ##---------------------------------------------------
 
-# Editor backup files
 *~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
 
 # KDE directory preferences
 .directory
@@ -62,18 +82,20 @@ __pycache__/
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
 
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
 
 ##---------------------------------------------------
 # Mac OSX default .gitignore
 ##---------------------------------------------------
 
+# General
 .DS_Store
 .AppleDouble
 .LSOverride
 
 # Icon must end with two \r
 Icon
-
 
 # Thumbnails
 ._*
@@ -85,6 +107,7 @@ Icon
 .TemporaryItems
 .Trashes
 .VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
 # Directories potentially created on remote AFP share
 .AppleDB
@@ -92,3 +115,69 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+##---------------------------------------------------
+# Visual Studio Code gitignore
+##---------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+##---------------------------------------------------
+# C language
+##---------------------------------------------------
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
