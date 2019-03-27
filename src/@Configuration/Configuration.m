@@ -3,22 +3,23 @@ classdef Configuration < handle
     %   Detailed explanation goes here
     
     properties
-        Folder
-        RootModel
-        MatlabIpv4
+        Folder char
+        RootModel char
+        TopModel char = 'top'
+        MatlabIpv4 char
+        
         Boards(1,:) Board
-        Debug = false
-        ParallelCompilation = false
-        CommSampleTime = 0.1
-        Port = 25500
+
+        CommsBackend comms.interface.Backend = comms.nng.NngBackend
+        
+        Debug logical = false
+        ParallelCompilation logical = false
     end
     
     methods
         distribute(obj)
         start(obj)
-        stop(obj)
-        add(obj,val)
-        
+        stop(obj)        
     end
 end
 

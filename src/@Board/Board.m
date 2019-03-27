@@ -3,9 +3,9 @@ classdef Board < handle
     %   Detailed explanation goes here
     
     properties
-        ModelName
-        Ipv4
-        External = false
+        ModelName char
+        Ipv4 char
+        External logical = false
     end
     
 end

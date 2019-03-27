@@ -3,8 +3,8 @@ function setSimulinkTmpFolders()
 project = simulinkproject;
 projectRoot = project.RootFolder;
 
-myCacheFolder = fullfile(projectRoot, 'tmpwork');
-myCodeFolder = fullfile(projectRoot, 'tmpcode');
+myCacheFolder = fullfile(projectRoot, 'work', 'cache');
+myCodeFolder = fullfile(projectRoot, 'work', 'codegen');
 
 Simulink.fileGenControl('set',...
     'CacheFolder', myCacheFolder,...
