@@ -8,7 +8,7 @@
 #define NUM_PRMS 3
 
 #include <nng/nng.h>
-#include <nng/protocol/pair0/pair.h>
+#include <nng/protocol/pubsub0/sub.h>
 #include "simstruc.h"
 
 static bool isPositiveRealDoubleParam(const mxArray *p)
@@ -88,9 +88,9 @@ static void mdlInitializeSizes(SimStruct *S)
 
     if (!ssSetNumOutputPorts(S, 1))
         return;
+        
     double *width = (double *)(mxGetData(ssGetSFcnParam(S, DATA_WIDTH_P)));
     ssSetOutputPortWidth(S, 0, (int)(*width));
-    //ssPrintf("Width is %f cast as %d", *width, (int)(*width));
 
     ssSetOutputPortDataType(S, 0, SS_DOUBLE);
     ssSetOutputPortComplexSignal(S, 0, COMPLEX_NO);
@@ -137,15 +137,16 @@ static void mdlSetupRuntimeResources(SimStruct *S)
     const mxArray *url_param = ssGetSFcnParam(S, HOST_URL_P);
     size_t len = mxGetNumberOfElements(url_param) + 1;
     char url[len];
+    mxGetString(url_param, url, len);
     int rv;
 
-    if ((rv = nng_pair0_open(sock)) < 0)
+    if ((rv = nng_sub0_open(sock)) < 0)
     {
         ssSetErrorStatus(S, "Unable to open socket.");
         return;
     }
     
-    mxGetString(url_param, url, len);
+    nng_setopt(*sock, NNG_OPT_SUB_SUBSCRIBE,"", 0);
 
     ssPrintf("Dialing %s", url);
 
@@ -165,7 +166,7 @@ static void mdlSetupRuntimeResources(SimStruct *S)
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
-    double *u_ptr = (double *)(ssGetOutputPortRealSignal(S, 0));
+    void *u_ptr = (void *)(ssGetOutputPortRealSignal(S, 0));
     nng_socket *sock = (nng_socket *)(ssGetPWorkValue(S, 0));
     size_t sizep = sizeof(double) * ssGetOutputPortWidth(S, 0);
     int rv;

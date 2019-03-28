@@ -23,9 +23,12 @@ classdef NngBackend < comms.interface.Backend
             % Check for direct target to target connection
             directs = directConnections(obj, conf, targetHandles);
 
-            % Replace subsystem content with comunication blocks
+            % Replace subsystem content with comunication blocks in the top
+            % model
             topCommunication(obj, conf, directs); 
 
+            % Move subsystem content to separate models with matching
+            % communication blocks
             createDeviceModels(obj, conf, directs, targetHandles)
         end
     end

@@ -6,9 +6,9 @@ function createDeviceModels(obj, conf, directs, target_handles)
     portDirect = obj.Port + 200;
     Ts = obj.SampleTime;
 
-    for i =1:length(conf.Boards)
+    for boardNum =1:length(conf.Boards)
         tic ();
-        boardModel = conf.Boards(i).ModelName;
+        boardModel = conf.Boards(boardNum).ModelName;
         modelToReplace = strcat(conf.RootModel, '/', boardModel);
         modelHandle = getSimulinkBlockHandle(modelToReplace);
         
@@ -35,54 +35,57 @@ function createDeviceModels(obj, conf, directs, target_handles)
                            'noprompt');
                        
         % Set params of replaced inports
-        for ii = 1:numel(in)
+        for portNum = 1:numel(in)
             isDirect = false;
             portOffset = 0;
-            for iii = 1: size(directs, 1)
-                if (directs (iii, 2) == modelHandle) ...
-                && (directs (iii, 4) == ii)
+            for directNum = 1:numel(directs)
+                if ~isempty(directs) && ...
+                        (directs(directNum).target == modelHandle) && ...
+                        (directs(directNum).targetPort == portNum)
                     isDirect = true;
-                    if iii > portOffset
-                        portOffset = iii;
+                    if directNum > portOffset
+                        portOffset = directNum;
                     end
                 end
             end
             if isDirect == true
-                set_param (in{ii}, 'portnum', ...
+                set_param (in{portNum}, 'portnum', ...
                     string(portDirect + portOffset));
             else
-                set_param (in{ii}, 'portnum', ...
+                set_param (in{portNum}, 'portnum', ...
                     string(port));
                 port = port + 1;
             end
             %set_param (in{ii}, 'signalDatatype', inportTypes{i}{ii});
             %set_param (in{ii}, 'dims', num2str(inportDimensions{i}(ii)));
-            set_param (in{ii}, 'sampletime', string(obj.CommSampleTime));
+            set_param (in{portNum}, 'sampletime', string(obj.CommSampleTime));
         end
 
         % Set params of replaced outports
-        for ii = 1:numel (out)
+        for portNum = 1:numel (out)
             count = 0;
             ips = [];
             isDirect = false;
             isOnly = 0;
             portOffset = [];
-            for iii = 1: size(directs, 1)
-                if (directs (iii, 1) == modelHandle) ...
-                && (directs (iii, 3) == ii)
+            for directNum = 1:numel(directs.source)
+                if ~isempty(directs) && ...
+                        (directs.source(directNum) == modelHandle) && ...
+                        (directs.sourcePort(directNum) == portNum)
+
                     isDirect = true;
-                    isOnly = directs(iii, 5);
-                    for iiii = 1:length(target_handles)
-                        if target_handles(iiii) == directs (iii, 2)
-                            portOffset(end + 1) = iii; %#ok
+                    isOnly = directs(directNum).onlyDirect;
+                    for handleNum = 1:length(target_handles)
+                        if target_handles(handleNum) == directs(directNum).target
+                            portOffset(end + 1) = directNum; %#ok
                         end
                     end
                     count = count + 1;
-                    name = get_param (directs (iii, 2), 'Name');
+                    targetName = get_param(directs(directNum).target, 'Name');
 
-                    for iiii = 1: length(conf.Boards)
-                        if (conf.Boards(iiii).ModelName == name)
-                            ips(end  + 1) = iiii; %#ok
+                    for targetNum = 1:length(conf.Boards)
+                        if (conf.Boards(targetNum).ModelName == targetName)
+                            ips(end + 1) = targetNum; %#ok
 
                         end
                     end
@@ -92,12 +95,12 @@ function createDeviceModels(obj, conf, directs, target_handles)
 
             if isDirect == true
                 for j = 1:count
-                    pc = get_param (out{ii}, 'PortConnectivity');
-                    name = get_param (pc.SrcBlock, 'Name');
+                    pc = get_param (out{portNum}, 'PortConnectivity');
+                    targetName = get_param (pc.SrcBlock, 'Name');
                     bh = add_block('comms_lib/Publishing', ...
                         strcat(boardModel, ...
                                '/SendDirect_', ...
-                               string(ii), ...
+                               string(portNum), ...
                                '_', ...
                                string(j)));
                     set_param(bh, 'hosturl', ...
@@ -109,20 +112,20 @@ function createDeviceModels(obj, conf, directs, target_handles)
                     set_param(bh, 'sampletime', ...
                         num2str(Ts));
                     add_line(sys, ...
-                        strcat(name, '/1'), ...
-                        strcat('SendDirect_', string(ii), '_', string(j), ...
+                        strcat(targetName, '/1'), ...
+                        strcat('SendDirect_', string(portNum), '_', string(j), ...
                         '/1'));
                 end
             end
 
             if isOnly == 0
-                set_param (out{ii}, 'hosturl', ...
+                set_param (out{portNum}, 'hosturl', ...
                     string(sprintf ('''tcp://:%u''',port)));
-                set_param(out{ii}, 'sampletime', ...
+                set_param(out{portNum}, 'sampletime', ...
                         num2str(Ts));
                 port = port + 1;
             else
-               delete_block (out{ii}); 
+               delete_block (out{portNum}); 
             end
         end
         save_system(sys);

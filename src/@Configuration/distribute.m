@@ -71,8 +71,8 @@ function distribute(obj)
     open_system(top);
     % For debugging only open generated models
     if obj.Debug
-        for i =1:length(conf.Boards)
-            sys = load_system(conf.Boards(i).ModelName);
+        for i =1:length(obj.Boards)
+            sys = load_system(obj.Boards(i).ModelName);
             open_system(sys);
         end
     else
@@ -85,9 +85,9 @@ function distribute(obj)
             % Run board models
             runDeviceModels(obj)
             % Run top-level model
-            set_param(topModel, 'StopTime', 'inf')
-            set_param(topModel, 'SimulationMode', 'normal')
-            set_param(topModel, 'SimulationCommand','start')
+            set_param(obj.TopModel, 'StopTime', 'inf')
+            set_param(obj.TopModel, 'SimulationMode', 'normal')
+            set_param(obj.TopModel, 'SimulationCommand','start')
         catch ME
             cd(oldFolder);
             rethrow(ME);

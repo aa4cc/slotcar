@@ -8,7 +8,7 @@
 #define NUM_PRMS 3
 
 #include <nng/nng.h>
-#include <nng/protocol/pair0/pair.h>
+#include <nng/protocol/pubsub0/pub.h>
 #include "simstruc.h"
 
 static bool isPositiveRealDoubleParam(const mxArray *p)
@@ -135,7 +135,7 @@ static void mdlSetupRuntimeResources(SimStruct *S)
     char url[len];
     int rv;
 
-    if ((rv = nng_pair0_open(sock)) < 0)
+    if ((rv = nng_pub0_open(sock)) < 0)
     {
         ssSetErrorStatus(S, "Unable to open socket.");
         return;
@@ -148,6 +148,7 @@ static void mdlSetupRuntimeResources(SimStruct *S)
         ssSetErrorStatus(S, "Unable to listen on host.");
         return;
     }
+    
     ssSetPWorkValue(S, 0, (void *)sock);
 }
 #endif /*  MDL_START */
