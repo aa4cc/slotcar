@@ -5,12 +5,10 @@ function distribute(obj)
 
     oldFolder = cd(obj.Folder); % work in folder specified by configuration
 
-    % ######## Create distribution folder with neccessary files ###########
+    % ########## Create distribution folder for generated models ##########
 
     if ~exist('distribution', 'dir')
         mkdir('distribution');
-%         copyFiles = fullfile(p.RootFolder, 'src', 'compile', 'compile.*');
-%         copyfile(copyFiles, 'distribution', 'f');
     end
 
     % ############### Copy root model to top model and cd #################
@@ -35,7 +33,7 @@ function distribute(obj)
         Simulink.BlockDiagram.copyContentsToSubsystem(root, subsys);
         Simulink.BlockDiagram.expandSubsystem(subsys);
 
-        % Copy configuration of parent model
+        % Copy configuration set to top model
         rootConfig = getActiveConfigSet(root);
         config = attachConfigSetCopy(top, rootConfig, true);
         setActiveConfigSet(top, config.name);
@@ -68,7 +66,6 @@ function distribute(obj)
     toc()
     
     % ############## Load and run the board and top models ################
-    open_system(top);
     % For debugging only open generated models
     if obj.Debug
         for i =1:length(obj.Boards)
@@ -77,53 +74,41 @@ function distribute(obj)
         end
     else
         try
-            % Open all scopes in top level scheme
-            scopes = find_system(top, 'BlockType', 'Scope');
-            for i = 1:numel (scopes)
-                open_system(scopes(i));
-            end
-            % Run board models
-            runDeviceModels(obj)
-            % Run top-level model
-            set_param(obj.TopModel, 'StopTime', 'inf')
-            set_param(obj.TopModel, 'SimulationMode', 'normal')
-            set_param(obj.TopModel, 'SimulationCommand','start')
+            loadDeviceModels(obj);
         catch ME
             cd(oldFolder);
             rethrow(ME);
         end
     end
+    fprintf('@@@ Successfully generated distribution models\n');
     cd(oldFolder);
 end
 
-
-function runDeviceModels(obj)
-% RUNDEVICEMODELS Sends a model for each specified subsystem to a board and 
-% runs it.
+function loadDeviceModels(obj)
+% LOADDEVICEMODELS Sends a model for each specified subsystem not in 
+% external mode to a board and compiles it.
 
     for i =1:length(obj.Boards)
-        tic ();
+        tic();
         boardModel = obj.Boards(i).ModelName;
         
         % Open subsystem
         sys = load_system(boardModel);
 
-        % Compile and run created model
         % Test connection to the board
         ip = obj.Boards(i).Ipv4;
         try
             b = beagleboneblue(ip, 'debian', 'temppwd');
         catch
            fprintf("Can't connect to %s\n", ip); 
+           if obj.Boards(i).Crucial
+              disp('Board is flagged as crucial, terminating')
+           end
            continue;
         end
 
         % Open the board model and run in external model
-        if obj.Boards(i).External
-            set_param(sys, 'SimulationMode', 'external');
-            set_param(sys, 'SimulationCommand', 'start');
-            open_system(sys);
-        else
+        if ~obj.Boards(i).External
             % Compile model on board and execute it there
             % Parallel compilation does this without waiting for
             % compilation results
@@ -134,11 +119,10 @@ function runDeviceModels(obj)
 
                 fprintf ('@@@ Code generation completed.\n%s\n', txt);
 
-                % Check for changes, run model if there are none
+                % Check for changes
                 if contains(txt, 'is up to date because no structural, parameter or code replacement library changes were found.')
                     fprintf('@@@ Model %s has no new code, starting old application.\n',  ...
                             char(boardModel));
-                    runModel(b, boardModel)
                 else
                     fprintf('@@@ Model %s has new code, processing changes.\n', ...
                             char(boardModel));
@@ -147,12 +131,13 @@ function runDeviceModels(obj)
                     packNGo(bi.buildInfo,{'packType', 'flat'});
 
                     if ispc
-                        system( ['compile.bat ', char(boardModel), ' ', ip, ' &'] );
+                        system( ['compile.bat ', ...
+                                 char(boardModel), ' ', ip, ' &'] );
                     else
-                        system( ['compile.bash ', char(boardModel), ' ', ip, ' &'] );                
+                        system( ['compile.bash ', ...
+                                 char(boardModel), ' ', ip, ' &'] );                
                     end
                 end
-
             else % normal compilation
                 set_param(sys, 'GenCodeOnly', 'off');
                 slbuild(sys);

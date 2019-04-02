@@ -1,35 +1,26 @@
-%% Stop all executables
 function stop(obj)
     
-    if isfield(obj, 'root') == true
-        set_param(strcat (obj.Root, '_'),'SimulationCommand','stop')
-    end
+% Stop the top model
+top = obj.TopModel;
+set_param(top, 'SimulationCommand', 'stop')
 
+% Try to stop each board model
+for i = 1:numel(obj.Boards)
+    board = obj.Boards(i);
+    boardModel = board.ModelName;
+    ip = board.Ipv4;
+    try
+        b = beagleboneblue (ip, 'debian', 'temppwd');
 
-
-    for i =1:length(obj.Boards)
-        tic ();
-        board = obj.Boards(i);
-        ip = board.Ipv4;
-        try
-            b = beagleboneblue (ip, 'debian', 'temppwd');
-
-            if isfield (board, 'External') ...
-                    && ~isempty(board.External) ...
-                    && board.External
-                set_param(sys,'SimulationCommand','stop');
-            else
-                runs = isModelRunning(b, board.ModelName);
-                if runs 
-                    fprintf ("Stopping model at %s\n", ip);
-                    % psmisc must be installed at target to perform this operation
-                    stopModel(b, board.ModelName)
-                end
+        % Stop model execution
+        if obj.Boards(i).External
+            set_param(sys,'SimulationCommand','stop');
+        else
+            if isModelRunning(b(i), sys)
+                stopModel(b, boardModel)
             end
-            toc()
-        catch
-           fprintf ("Can't stop model at %s\n", ip); 
         end
+    catch
+        fprintf('@@@ Could not stop model running at %s\n', ip);
     end
-
 end

@@ -19,7 +19,8 @@ classdef Configuration < handle
     methods
         distribute(obj)
         start(obj)
-        stop(obj)        
+        stop(obj)  
+        openConnection(obj)
     end
 end
 

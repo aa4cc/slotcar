@@ -35,7 +35,7 @@ float return_gyro_z(){
       return data.gyro[2];
 }          
 
-float return_accel_x(){H
+float return_accel_x(){
       return data.accel[0];
 }
 float return_accel_y(){
