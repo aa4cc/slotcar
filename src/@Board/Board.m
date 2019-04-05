@@ -16,8 +16,24 @@ classdef Board < handle
     properties
         ModelName char
         Ipv4 char
+        LoginUser char = 'debian'
+        LoginPwd char = 'temppwd'
         Crucial logical = false
         External logical = false
+
+    end
+    
+    methods
+        function [b, ok] = connect(obj)
+            try
+                b = beagleboneblue(obj.Ipv4, obj.LoginUser, obj.LoginPwd);
+                ok = true;
+            catch
+               fprintf("@@@ Can't connect to %s\n", obj.Ipv4); 
+               b = beagleboneblue.empty;
+               ok = ~obj.Crucial;
+            end
+        end
     end
     
 end

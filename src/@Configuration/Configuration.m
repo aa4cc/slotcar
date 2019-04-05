@@ -20,7 +20,7 @@ classdef Configuration < handle
         distribute(obj)
         start(obj)
         stop(obj)  
-        [beaglebones, ok] = openConnection(obj)
+        [beaglebones, isRunnable] = openConnection(obj)
     end
 end
 

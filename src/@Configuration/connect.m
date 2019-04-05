@@ -1,22 +1,12 @@
-function [beaglebones, ok] = openConnection(obj)
-%OPENCONNECTION Summary of this function goes here
-%   Detailed explanation goes here
+function [beaglebones, isRunnable] = connect(obj)
+%OPENCONNECTION Attemps to open a ssh connection to boards.
+%   Sequentially connect to development boards defined in the experiment 
+%   and return the connected devices as an array. The second output value
+%   indicates for other scripts that a crucial board cannot be connected
+%   and experiment should be interrupted.
 
-ok = true;
-bc = numel(obj.Boards);
-beaglebones = cell(bc, 1);
-for i = 1:bc
-    ip = obj.Boards(i).Ipv4;
-    try
-        beaglebones{i} = beagleboneblue(ip, 'debian', 'temppwd');
-    catch
-       fprintf("@@@ Can't connect to %s\n", ip); 
-       beaglebones{i} = [];
-       if obj.Boards(i).Crucial
-          fprintf('@@@ Board is flagged as crucial.\n')
-          ok = false;
-       end
-       continue
-    end
+[B, ok] = arrayfun(@(b) b.connect, obj.Boards, 'UniformOutput', false);
+beaglebones = B(~cellfun('isempty',B));
+isRunnable = all([ok{:}]);
 end
 
