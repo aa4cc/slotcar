@@ -12,7 +12,6 @@ classdef Configuration < handle
 
         CommsBackend comms.interface.Backend = comms.nng.NngBackend
         
-        Debug logical = false
         ParallelCompilation logical = false
     end
     
@@ -20,7 +19,10 @@ classdef Configuration < handle
         distribute(obj)
         start(obj)
         stop(obj)  
+        inspect(obj)
         [beaglebones, isRunnable] = openConnection(obj)
+        directs = getDirectConnections(obj)
+        targetHandles = getBoardTargetHandles(obj)
     end
 end
 

@@ -1,4 +1,4 @@
-function generate
+function generate(obj)
 %GENERATE Create distribution folder and distribution models.
 %   Separates the root model into models for computer and boards. 
 %   Interfaces between these models are replaced by wireless communication
@@ -21,8 +21,8 @@ try
     if exist(obj.TopModel, 'file') ~= 4
         top = new_system(obj.TopModel);
     else
-        set_param(obj.TopModel, 'SimulationCommand','stop')
         top = load_system(obj.TopModel);
+        set_param(obj.TopModel, 'SimulationCommand','stop');
         Simulink.BlockDiagram.deleteContents(top);
     end
     subsys = add_block('built-in/Subsystem', ...

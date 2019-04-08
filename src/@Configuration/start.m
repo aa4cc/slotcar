@@ -35,6 +35,8 @@ end
 % Open and start the top simulink model
 top = obj.TopModel;
 fprintf('@@@ Running model %s', top);
+sys = load_model(top);
+open_model(sys);
 set_param(top, 'SimulationMode', 'normal');
 set_param(top, 'SimulationCommand', 'start');
 % Open all scopes in this model

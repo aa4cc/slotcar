@@ -5,22 +5,14 @@ function distribute(obj)
 %   specified. When debugging is specified only open generated models 
 %   for inspection.
 
-if obj.Debug
-    open_system(top);
-    for i =1:length(obj.Boards)
-        sys = load_system(obj.Boards(i).ModelName);
-        open_system(sys);
-    end
-else
+    oldFolder = cd(fullfile(obj.Folder, 'distribution'));
     try
         loadDeviceModels(obj);
     catch ME
         cd(oldFolder);
         rethrow(ME);
     end
-end
-fprintf('@@@ Successfully generated distribution models\n');
-    
+    fprintf('@@@ Successfully generated distribution models\n'); 
 end
 
 function loadDeviceModels(obj)
