@@ -8,7 +8,7 @@ classdef Configuration < handle
         TopModel char = 'top'
         MatlabIpv4 char
         
-        Boards(1,:) Board
+        Boards(1,:) BeagleBoard
 
         CommsBackend comms.interface.Backend = comms.nng.NngBackend
         

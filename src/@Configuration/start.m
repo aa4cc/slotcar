@@ -4,7 +4,7 @@ oldFolder = cd(fullfile(obj.Folder, 'distribution'));
 % Open SSH connections to all boards
 [beaglebones, ok] = obj.connect;
 if ~ok
-    fprintf('@@@ Returning without starting any model.')
+    fprintf('@@@ Returning without starting any model.\n')
     return;
 end
 

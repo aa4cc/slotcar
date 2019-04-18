@@ -12,7 +12,6 @@ function distribute(obj)
         cd(oldFolder);
         rethrow(ME);
     end
-    fprintf('@@@ Successfully generated distribution models\n'); 
 end
 
 function loadDeviceModels(obj)
@@ -22,7 +21,7 @@ function loadDeviceModels(obj)
     % Open SSH connections to all boards
     [beaglebones, ok] = obj.connect;
     if ~ok
-        fprintf('@@@ Returning without starting any model.')
+        fprintf('@@@ Returning without starting any model.\n')
         return;
     end
 
@@ -51,7 +50,8 @@ function loadDeviceModels(obj)
                 fprintf('Building %s\n',  char(boardModel));
                 txt = evalc('slbuild(sys)');
 
-                fprintf ('@@@ Code generation completed.\n%s\n', txt);
+                fprintf (['@@@ Parallel code generation for board %u' ...
+                          'completed.\n%s\n'], txt);
 
                 % Check for changes
                 if ~contains(txt, ['is up to date because no structural, ',...
