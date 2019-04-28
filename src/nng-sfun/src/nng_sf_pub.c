@@ -29,8 +29,8 @@ static bool isPositiveRealDoubleParam(const mxArray *p)
 /*====================*
  * S-function methods *
  *====================*/
-
-#if defined(MATLAB_MEX_FILE)
+#define MDL_CHECK_PARAMETERS
+#if defined(MDL_CHECK_PARAMETERS) && defined(MATLAB_MEX_FILE)
 /* Function: mdlCheckParameters =============================================
  * Abstract:
  *    Validate our parameters to verify they are okay.
@@ -110,6 +110,8 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 
 #define MAXCHARS 80
 
+#define MDL_SETUP_RUNTIME_RESOURCES
+#if defined(MDL_SETUP_RUNTIME_RESOURCES)
 static void mdlSetupRuntimeResources(SimStruct *S)
 {
     nng_socket *sock = malloc(sizeof(nng_socket));
@@ -133,6 +135,7 @@ static void mdlSetupRuntimeResources(SimStruct *S)
     
     ssSetPWorkValue(S, 0, (void *)sock);
 }
+#endif // MDL_SETUP_RUNTIME_RESOURCES
 
 #define nngSocket() ((nng_socket *)(ssGetPWorkValue(S, 0)))
 
@@ -152,10 +155,12 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 }
 
 #define MDL_CLEANUP_RUNTIME_RESOURCES
+#if defined(MDL_CLEANUP_RUNTIME_RESOURCES)
 static void mdlCleanupRuntimeResources(SimStruct *S)
 {
     nng_close(*nngSocket());
 }
+#endif // MDL_CLEANUP_RUNTIME_RESOURCES
 
 static void mdlTerminate(SimStruct *S)
 {
