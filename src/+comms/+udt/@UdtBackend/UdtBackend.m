@@ -7,6 +7,7 @@ classdef UdtBackend < comms.interface.Backend
     end
     methods
         function createDistributionModels(obj, conf)
+            import comms.common.getDirectConnections
             load_system(conf.TopModel)
 
             % Check for direct target to target connection

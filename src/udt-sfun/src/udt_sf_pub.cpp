@@ -4,9 +4,8 @@
 
 #define HOST_IP_P 0
 #define HOST_PORT_P 1
-#define DATA_WIDTH_P 2
-#define SAMPLE_TIME_P 3
-#define NUM_PRMS 4
+#define SAMPLE_TIME_P 2
+#define NUM_PRMS 3
 
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -53,14 +52,7 @@ static void mdlCheckParameters(SimStruct *S)
         return;
     }
 
-    bool isValid = isPositiveRealDoubleParam(ssGetSFcnParam(S, DATA_WIDTH_P));
-    if (!isValid)
-    {
-        ssSetErrorStatus(S, "Data width parameter must be a positive scalar.");
-        return;
-    }
-
-    isValid = isPositiveRealDoubleParam(ssGetSFcnParam(S, SAMPLE_TIME_P));
+    bool isValid = isPositiveRealDoubleParam(ssGetSFcnParam(S, SAMPLE_TIME_P));
     if (!isValid)
     {
         ssSetErrorStatus(S, "Step size parameter must be a positive double real scalar.");
@@ -81,7 +73,6 @@ static void mdlInitializeSizes(SimStruct *S)
 
     ssSetSFcnParamTunable(S, HOST_IP_P, false);
     ssSetSFcnParamTunable(S, HOST_PORT_P, false);
-    ssSetSFcnParamTunable(S, DATA_WIDTH_P, false);
     ssSetSFcnParamTunable(S, SAMPLE_TIME_P, false);
 
     ssSetNumContStates(S, 0);
@@ -89,8 +80,7 @@ static void mdlInitializeSizes(SimStruct *S)
 
     if (!ssSetNumInputPorts(S, 1))
         return;
-    double *width = (double *)(mxGetData(ssGetSFcnParam(S, DATA_WIDTH_P)));
-    ssSetInputPortWidth(S, 0, (int)(*width));
+    ssSetInputPortWidth(S, 0, DYNAMICALLY_TYPED);
     ssSetInputPortDataType(S, 0, SS_DOUBLE);
     ssSetInputPortComplexSignal(S, 0, COMPLEX_NO);
     ssSetInputPortRequiredContiguous(S, 0, true);
@@ -142,7 +132,7 @@ static void mdlSetupRuntimeResources(SimStruct *S)
     port_p = ssGetSFcnParam(S, HOST_PORT_P);
     mxGetString(address_p, address, MAXCHARS);
     mxGetString(port_p, port, MAXCHARS);
-    
+
     if (0 != getaddrinfo(NULL, port, &hints, &self) || self == NULL)
     {
         ssSetErrorStatus(S, "Incorrect or busy port.\n");
@@ -192,25 +182,25 @@ static void mdlOutputs(SimStruct *S, int_T tid)
         clients->push_front(accepting);
     }
 
-    for(auto it = clients->begin(); it != clients->end(); )
+    for (auto it = clients->begin(); it != clients->end();)
     {
         if (UDT::ERROR == UDT::sendmsg(*it, (char *)uptr, usize))
         {
             clients->remove(*(it++));
         }
-        else 
+        else
         {
             ++it;
         }
-    }    
+    }
 }
 
 #define MDL_CLEANUP_RUNTIME_RESOURCES
 #if defined(MDL_CLEANUP_RUNTIME_RESOURCES)
 static void mdlCleanupRuntimeResources(SimStruct *S)
 {
-    delete(udtClients);
-        UDT::cleanup();
+    delete (udtClients);
+    UDT::cleanup();
 }
 #endif // MDL_CLEANUP_RUNTIME_RESOURCES
 

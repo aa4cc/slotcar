@@ -8,10 +8,11 @@ classdef NngBackend < comms.interface.Backend
     methods
         function createDistributionModels(obj, conf)
             
+            import comms.common.getDirectConnections
             load_system(conf.TopModel)
 
             % Check for direct target to target connection
-            directs = conf.getDirectConnections;
+            directs = getDirectConnections(conf);
 
             % Replace subsystem content with comunication blocks in the top
             % model

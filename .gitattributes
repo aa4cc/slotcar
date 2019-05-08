@@ -35,11 +35,13 @@
 *.eps binary
 
 # Matlab binary files
+*.p -crlf -diff -merge
+*.fig -crlf -diff -merge
 *.slx -crlf -diff -merge
 *.mdl -crlf -diff -merge
 *.mat -crlf -diff -merge
 *.mlx -crlf -diff -merge
-*.mexw64 -crlf -diff -merge
+*.mex* -crlf -diff -merge
 
 # Compiled Object files
 *.slo binary

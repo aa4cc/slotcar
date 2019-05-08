@@ -10,10 +10,10 @@ classdef ImuSysObject < realtime.internal.SourceSampleTime ...
     end
     
     properties (Nontunable)
-        numOutputs = 6;   % Default value
     end
     
     properties (Access = private)
+        numOutputs = 6;   % Default value
         % Pre-computed constants.
     end
     
@@ -166,14 +166,14 @@ classdef ImuSysObject < realtime.internal.SourceSampleTime ...
         function updateBuildInfo(buildInfo, context)
             if context.isCodeGenTarget('rtw')
                 % Update buildInfo
-                srcDir = fullfile(fileparts(mfilename('fullpath')),'src'); 
+                srcDir = fullfile(fileparts(mfilename('fullpath')),'src');
                 includeDir = fullfile(fileparts(mfilename('fullpath')),'include');
                 addIncludePaths(buildInfo,includeDir);
                 % Use the following API's to add include files, sources and
                 % linker flags
                 addIncludeFiles(buildInfo,'imu.h',includeDir);
                 addSourceFiles(buildInfo,'imu.c',srcDir);
-                %addLinkFlags(buildInfo,{'-lSource'});
+                addLinkFlags(buildInfo,{'-lrobotcontrol'});
                 %addLinkObjects(buildInfo,'sourcelib.a',srcDir);
                 %addCompileFlags(buildInfo,{'-D_DEBUG=1'});
                 %addDefines(buildInfo,'MY_DEFINE_1')

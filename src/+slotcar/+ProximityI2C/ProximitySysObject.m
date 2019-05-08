@@ -3,7 +3,7 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
         & matlab.system.mixin.Propagates ...
         & matlab.system.mixin.CustomIcon
     %
-    % System object block for i2c IR LED proximity sensor. IR LED current must be within 0-200 range and multiple of 10 (e.g. 10, 20, 190).
+    % System object block for i2c IR LED proximity sensor.
     % 
     % This template includes most, but not all, possible properties,
     % attributes, and methods that you can implement for a System object in
@@ -18,18 +18,13 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
     %#ok<*EMCA>
     
     properties
-        % Public, tunable properties.
+        % Bus
+        Bus = 0;
+        % Lowpass time constant 
+        TC = 0.008;
     end
     
     properties (Nontunable)
-        %I2C bus
-        I2Cbus = '0x3F';
-        %Chip adress        
-        I2Cadress = '1';
-        %Data register adress
-        I2Cdataadress = '0x13';
-        %IR LED current [mA]
-        current = 200;
     end
     
     properties (Access = private)
@@ -51,29 +46,29 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
                 % Place simulation setup code here
             else
                 % Call C-function implementing device initialization
-                coder.cinclude('i2cdriver.h');
-                % Call C-function implementing device initialization                
-                coder.ceval('i2c_setup', uint8(obj.current/10));
+                coder.cinclude('vcnl4000.h');
+                % Call C-function implementing device initialization    
+                disp(obj.SampleTime)
+                coder.ceval('i2c_setup', obj.Bus, obj.getSampleTime, obj.TC);
             end
         end
         
-        function y = stepImpl(obj)   %#ok<MANU>
-            y = uint32(0);
+        function prox = stepImpl(obj)
+            prox = double(0);
             if isempty(coder.target)
                 % Place simulation output code here
             else
                 % Call C-function implementing device output
-                y = coder.ceval('i2c_measure');
-                %varargout{1} = y;
+                prox = coder.ceval('i2c_measure', obj.Bus);
             end
         end
         
-        function releaseImpl(obj) %#ok<MANU>
+        function releaseImpl(obj) 
             if isempty(coder.target)
                 % Place simulation termination code here
             else
                 % Call C-function implementing device termination
-                %coder.ceval('source_terminate');
+                coder.ceval('i2c_cleanup', obj.Bus);
             end
         end
     end
@@ -109,20 +104,16 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
         end
         
         function varargout = getOutputDataTypeImpl(~)
-            varargout{1} = 'uint32';
+            varargout{1} = 'double';
         end
         
         function icon = getIconImpl(obj)
             % Define a string as the icon for the System block in Simulink.
-            icon = sprintf('IR LED current: %d mA\n', obj.current);
+            icon = 'VCNL4010';
         end
         
         %pri zavreni nastaveni blocku
         function validatePropertiesImpl(obj)
-            %%implement input check here
-             if obj.current<0||obj.current>200||mod(obj.current,10)~=0
-                     error('Current must be within 0-200 range and multiple of 10 (e.g. 10, 20, 190)');                
-             end
         end
       
     
@@ -154,14 +145,9 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
                 srcDir = fullfile(fileparts(mfilename('fullpath')),'src'); 
                 includeDir = fullfile(fileparts(mfilename('fullpath')),'include');
                 addIncludePaths(buildInfo,includeDir);
-                % Use the following API's to add include files, sources and
-                % linker flags
-                addIncludeFiles(buildInfo,'i2cdriver.h',includeDir);
-                addSourceFiles(buildInfo,'i2cdriver.c',srcDir);
-                %addLinkFlags(buildInfo,{'-lSource'});
-                %addLinkObjects(buildInfo,'sourcelib.a',srcDir);
-                %addCompileFlags(buildInfo,{'-D_DEBUG=1'});
-                %addDefines(buildInfo,'MY_DEFINE_1')
+                addIncludeFiles(buildInfo,'vcnl4000.h',includeDir);
+                addSourceFiles(buildInfo,'vcnl4000.c',srcDir);
+                addLinkFlags(buildInfo,{'-lrobotcontrol'});
             end
         end
     end

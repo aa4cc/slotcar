@@ -3,9 +3,8 @@
 #define S_FUNCTION_LEVEL 2
 
 #define HOST_URL_P 0
-#define DATA_WIDTH_P 1
-#define SAMPLE_TIME_P 2
-#define NUM_PRMS 3
+#define SAMPLE_TIME_P 1
+#define NUM_PRMS 2
 
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/pub.h>
@@ -43,14 +42,7 @@ static void mdlCheckParameters(SimStruct *S)
         return;
     }
 
-    bool isValid = isPositiveRealDoubleParam(ssGetSFcnParam(S, DATA_WIDTH_P));
-    if (!isValid)
-    {
-        ssSetErrorStatus(S, "Data width parameter must be a positive scalar.");
-        return;
-    }
-
-    isValid = isPositiveRealDoubleParam(ssGetSFcnParam(S, SAMPLE_TIME_P));
+    bool isValid = isPositiveRealDoubleParam(ssGetSFcnParam(S, SAMPLE_TIME_P));
     if (!isValid)
     {
         ssSetErrorStatus(S, "Step size parameter must be a positive double real scalar.");
@@ -70,7 +62,6 @@ static void mdlInitializeSizes(SimStruct *S)
     }
 
     ssSetSFcnParamTunable(S, HOST_URL_P, false);
-    ssSetSFcnParamTunable(S, DATA_WIDTH_P, false);
     ssSetSFcnParamTunable(S, SAMPLE_TIME_P, false);
 
     ssSetNumContStates(S, 0);
@@ -78,8 +69,7 @@ static void mdlInitializeSizes(SimStruct *S)
 
     if (!ssSetNumInputPorts(S, 1))
         return;
-    double *width = (double *)(mxGetData(ssGetSFcnParam(S, DATA_WIDTH_P)));
-    ssSetInputPortWidth(S, 0, (int)(*width));
+    ssSetInputPortWidth(S, 0, DYNAMICALLY_SIZED);
     ssSetInputPortDataType(S, 0, SS_DOUBLE);
     ssSetInputPortComplexSignal(S, 0, COMPLEX_NO);
     ssSetInputPortRequiredContiguous(S, 0, true);
@@ -132,7 +122,7 @@ static void mdlSetupRuntimeResources(SimStruct *S)
         ssSetErrorStatus(S, "Unable to listen on host.");
         return;
     }
-    
+
     ssSetPWorkValue(S, 0, (void *)sock);
 }
 #endif // MDL_SETUP_RUNTIME_RESOURCES

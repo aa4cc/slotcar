@@ -14,19 +14,15 @@ extern "C" {
 #endif
 
 int imu_setup();
+int imu_terminate();
+int imu_measure();
 
-int is_gyro_calibrated();
-int is_accel_calibrated();
-
-float return_gyro_x();             
-float return_gyro_y();
-float return_gyro_z();
-float return_accel_x();
-float return_accel_y();
-float return_accel_x();
-
-
-int i2c_measure(); 
+double return_gyro_x();             
+double return_gyro_y();
+double return_gyro_z();
+double return_accel_x();
+double return_accel_y();
+double return_accel_z();
       
 #ifdef __cplusplus
 }

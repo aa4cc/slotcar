@@ -78,10 +78,9 @@ static void mdlInitializeSizes(SimStruct *S)
 
     if (!ssSetNumOutputPorts(S, 1))
         return;
-        
+
     double *width = (double *)(mxGetData(ssGetSFcnParam(S, DATA_WIDTH_P)));
     ssSetOutputPortWidth(S, 0, (int)(*width));
-
     ssSetOutputPortDataType(S, 0, SS_DOUBLE);
     ssSetOutputPortComplexSignal(S, 0, COMPLEX_NO);
 
@@ -126,8 +125,8 @@ static void mdlSetupRuntimeResources(SimStruct *S)
         ssSetErrorStatus(S, "Unable to open socket.");
         return;
     }
-    
-    nng_setopt(*sock, NNG_OPT_SUB_SUBSCRIBE,"", 0);
+
+    nng_setopt(*sock, NNG_OPT_SUB_SUBSCRIBE, "", 0);
 
     if ((rv = nng_dial(*sock, url, NULL, NNG_FLAG_NONBLOCK)) != 0)
     {
@@ -147,7 +146,9 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     size_t usize = sizeof(double) * ssGetOutputPortWidth(S, 0);
     int rv;
 
-    if ((rv = nng_recv(*sock, uptr, usize, NNG_FLAG_NONBLOCK)) != 0)
+    double buffer[50];
+
+    if ((rv = nng_recv(*sock, uptr, &usize, NNG_FLAG_NONBLOCK)) != 0)
     {
         if (rv & (NNG_EAGAIN | NNG_ETIMEDOUT))
             return;

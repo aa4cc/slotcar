@@ -14,37 +14,25 @@ int imu_setup() {
         }
         f = fopen("file.txt", "w");
 }
-/*
-int is_gyro_calibrated(){
-  return rc_is_gyro_calibrated();
-}
 
-int is_accel_calibrated(){
-  return rc_is_accel_calibrated();
-}
-      */
-
-
-float return_gyro_x(){
+double return_gyro_x(){
       return data.gyro[0];
 }                       
-float return_gyro_y(){
+double return_gyro_y(){
       return data.gyro[1];
 }       
-float return_gyro_z(){
+double return_gyro_z(){
       return data.gyro[2];
 }          
 
-float return_accel_x(){
+double return_accel_x(){
       return data.accel[0];
 }
-float return_accel_y(){
-      /*fprintf(f, "y: %d   ", data.accel[1]);*/
+double return_accel_y(){
       return data.accel[1];
 }
 double return_accel_z(){
-      /*fprintf(f, "z: %d\n", data.accel[2]*MS2_TO_G);*/
-	    return data.accel[2];
+	  return data.accel[2];
 }
 
 

@@ -9,5 +9,5 @@ addIncludePaths(info, { ...
     fullfile(nngdir, 'include') ...
     });
 
-addLinkFlags(info, '-L/usr/local/lib -lnng');
+addLinkFlags(info,' -lnng');
 end

@@ -180,7 +180,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 {
     void *uptr = (void *)(ssGetOutputPortRealSignal(S, 0));
     size_t usize = sizeof(double) * ssGetOutputPortWidth(S, 0);
-    while (UDT::ERROR != UDT::recvmsg(*udtSocket, (char *)uptr, usize));
+    while (UDT::ERROR != UDT::recvmsg(*udtSocket, (char *)uptr, usize))
+        ;
     if (CUDTException::EASYNCRCV != UDT::getlasterror_code())
     {
         UDT::connect(*udtSocket, udtPeer->ai_addr, udtPeer->ai_addrlen);
@@ -191,8 +192,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 static void mdlCleanupRuntimeResources(SimStruct *S)
 {
     freeaddrinfo(udtPeer);
-
-        UDT::cleanup();
+    UDT::cleanup();
 }
 #endif // MDL_CLEANUP_RUNTIME_RESOURCES
 
