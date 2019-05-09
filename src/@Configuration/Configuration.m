@@ -5,23 +5,24 @@ classdef Configuration < handle
     properties
         Folder char
         RootModel char
-        TopModel char = 'top'
+        CtrlModel char = 'control'
         MatlabIpv4 char
         
         Boards(1,:) BeagleBoard
 
         CommsBackend comms.interface.Backend = comms.nng.NngBackend
         
+        DesktopExternalRT logical = false
         ParallelCompilation logical = false
     end
     
     methods
+        gui(obj)
         distribute(obj)
         start(obj)
         stop(obj)  
         inspect(obj)
-        [beaglebones, isRunnable] = openConnection(obj)
-        directs = getDirectConnections(obj)
+        [beaglebones, isRunnable] = connect(obj)
         targetHandles = getBoardTargetHandles(obj)
     end
 end

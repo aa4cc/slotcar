@@ -5,15 +5,7 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
     %
     % System object block for i2c IR LED proximity sensor.
     % 
-    % This template includes most, but not all, possible properties,
-    % attributes, and methods that you can implement for a System object in
-    % Simulink.
-    %
-    % NOTE: When renaming the class name Source, the file name and
-    % constructor name must be updated to use the class name.
-    %
-    
-    % Copyright 2016 The MathWorks, Inc.
+
     %#codegen
     %#ok<*EMCA>
     
@@ -21,7 +13,7 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
         % Bus
         Bus = 0;
         % Lowpass time constant 
-        TC = 0.008;
+        TC = 0.016;
     end
     
     properties (Nontunable)

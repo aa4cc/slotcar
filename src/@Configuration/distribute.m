@@ -7,16 +7,17 @@ function distribute(obj)
 
     oldFolder = cd(fullfile(obj.Folder, 'distribution'));
     try
-        loadDeviceModels(obj);
+        uploadDeviceModels(obj);
+        uploadControlModel(obj);
     catch ME
         cd(oldFolder);
         rethrow(ME);
     end
 end
 
-function loadDeviceModels(obj)
-% LOADDEVICEMODELS Sends a model for each specified subsystem not in 
-% external mode to a board and compiles it.
+function uploadDeviceModels(obj)
+% UPLOADDEVICEMODELS Sends a model for each specified subsystem to a board 
+% and compiles it.
 
     % Open SSH connections to all boards
     [beaglebones, ok] = obj.connect;
@@ -36,19 +37,19 @@ function loadDeviceModels(obj)
         % Open subsystem
         sys = load_system(boardModel);
 
-        % Test connection to the board
+        % Pick connection to the board
         ip = obj.Boards(i).Ipv4;
         b = beaglebones{i};
 
         % Distribute and compile models on boards not run in external mode
         if ~obj.Boards(i).External
-            % Compile model on board and execute it there
+            % Compile model on board
             % Parallel compilation does this without waiting for
             % compilation results
             if obj.ParallelCompilation
-                set_param(sys, 'GenCodeOnly', 'on');
+                %set_param(sys, 'GenCodeOnly', 'on');
                 fprintf('Building %s\n',  char(boardModel));
-                txt = evalc('slbuild(sys)');
+                txt = evalc('rtwbuild(sys,''generateCodeOnly'', true)');
 
                 fprintf (['@@@ Parallel code generation for board %u' ...
                           'completed.\n%s\n'], txt);
@@ -73,8 +74,7 @@ function loadDeviceModels(obj)
                     end
                 end
             else % normal compilation
-                set_param(sys, 'GenCodeOnly', 'off');
-                slbuild(sys);
+                rtwbuild(sys, 'generateCodeOnly', false);
                 runs = isModelRunning(b, sys);
                 if runs
                     fprintf("@@@ Model running at %s\n", ip);
@@ -82,8 +82,21 @@ function loadDeviceModels(obj)
             end
             fprintf("@@@ Built model %s at %s\n", boardModel, ip);
         else
-            fprintf("@@@ Skipping external mode model %s\n", boardModel);
+            set_param(sys, 'SimulationMode', 'external');
+            set_param(sys, 'SimulationMode', 'connect');
+            fprintf("@@@ Loaded and connected external mode model %s\n",...
+                boardModel);
         end
         toc ();
     end
+end
+
+function uploadControlModel(obj)
+% UPLOADCONTROLMODEL sets and builds the control model to be run on pc
+
+model = obj.CtrlModel;
+sys = load_system(model);
+set_param(sys,'SimulationMode','normal')
+
+rtwbuild(sys, 'codeGenerationOnly', false);
 end

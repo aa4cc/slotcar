@@ -14,8 +14,8 @@ echo Make $1
 sshpass -p temppwd ssh debian@$2 "cd $1 ; make -f $1.mk all ; exit" 
 
 
-echo Run $1
+# echo Run $1
 
-sshpass -p temppwd ssh debian@$2 "sudo ./$1.elf > $1.log 2>&1 & "
+# sshpass -p temppwd ssh debian@$2 "sudo ./$1.elf > $1.log 2>&1 & "
 
 exit

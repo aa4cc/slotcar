@@ -34,24 +34,28 @@ function buildWithNNG(nngdir)
     
     % build
     p = simulinkproject;
-    olddir = cd(fullfile(p.RootFolder,'src', 'nng-sfun'));
-
+    oldFolder = cd(fullfile(p.RootFolder, 'mex', 'nng'));
+    
+    try
+        
     disp('## Building nng_sf_sub');
     mex( '-g',...
-        ['-I' fullfile(p.RootFolder,'src','nng-sfun','include')],...
         ['-I' fullfile(nngdir,'include')],...
         ['-L' fullfile(nngdir,'lib')],...
         '-lnng',...
-        fullfile('src','nng_sf_sub.c'));
+        fullfile(p.RootFolder,'src','+comms','+nng','sfun','nng_sub.c'));
 
     disp('## Building nng_sf_pub');
     mex( '-g',...
-        ['-I' fullfile(p.RootFolder,'src','nng-sfun','include')],...
         ['-I' fullfile(nngdir,'include')],...
         ['-L' fullfile(nngdir,'lib')],...
         '-lnng',...
-        fullfile('src','nng_sf_pub.c'));
-
-    cd(olddir);
+        fullfile(p.RootFolder,'src','+comms','+nng','sfun','nng_pub.c'));
+    
+    catch ME
+       cd(oldFolder) 
+       rethrow(ME)
+    end
+    cd(oldFolder);
 
 end

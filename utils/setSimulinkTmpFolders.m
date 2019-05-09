@@ -11,6 +11,6 @@ Simulink.fileGenControl('set',...
     'CodeGenFolder', myCodeFolder,...
     'createDir', true)
     
-disp('## Set temporary folders');
+disp('@@@ Set temporary folders');
 
 end

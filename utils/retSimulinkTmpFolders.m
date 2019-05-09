@@ -1,4 +1,4 @@
 function retSimulinkTmpFolders
 Simulink.fileGenControl('reset')
-disp('## Reset temp folders');
+disp('@@@ Reset temp folders');
 end

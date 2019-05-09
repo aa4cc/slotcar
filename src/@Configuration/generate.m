@@ -17,38 +17,38 @@ root = load_system(obj.RootModel);
 cd('distribution');
 
 try
-    % Open top model, top is the distribution model for Matlab PC.
-    if exist(obj.TopModel, 'file') ~= 4
-        top = new_system(obj.TopModel);
+    % Open control model, that is the distribution model for Matlab PC.
+    if exist(obj.CtrlModel, 'file') ~= 4
+        model = new_system(obj.CtrlModel);
     else
-        top = load_system(obj.TopModel);
-        set_param(obj.TopModel, 'SimulationCommand','stop');
-        Simulink.BlockDiagram.deleteContents(top);
+        model = load_system(obj.CtrlModel);
+        set_param(obj.CtrlModel, 'SimulationCommand','stop');
+        Simulink.BlockDiagram.deleteContents(model);
     end
     subsys = add_block('built-in/Subsystem', ...
-                        strcat(obj.TopModel,'/top'));
+                        strcat(obj.CtrlModel,'/subsystem'));
 
-    % Copy root data to top model
+    % Copy root data to control model
     Simulink.BlockDiagram.copyContentsToSubsystem(root, subsys);
     Simulink.BlockDiagram.expandSubsystem(subsys);
 
-    % Copy configuration set to top model
+    % Copy configuration set to control model
     rootConfig = getActiveConfigSet(root);
-    config = attachConfigSetCopy(top, rootConfig, true);
-    setActiveConfigSet(top, config.name);
+    config = attachConfigSetCopy(model, rootConfig, true);
+    setActiveConfigSet(model, config.name);
     
-    % Save top model
-    save_system(top)
+    % Save control model
+    save_system(model)
 catch ME
     toc();
-    cd(oldFolder)
-    rethrow(ME)
+    cd(oldFolder);
+    rethrow(ME);
 end
 
 disp("@@@ Copied root model.")
 toc();
 
-% Create top and board models with communication blocks
+% Create control and board models with communication blocks
 tic();
 try
     obj.CommsBackend.createDistributionModels(obj);
