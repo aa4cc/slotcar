@@ -35,6 +35,16 @@ classdef BeagleBoard < handle
                ok = ~obj.Crucial;
             end
         end
+            
+        function openShell(obj)
+            b = obj.connect();
+            if ~isempty(b)
+                b.openShell();
+            else
+                warning(['@@@ Could not establish connection ' ...
+                         'to the BeagleBone'])
+            end
+        end
     end
     
 end

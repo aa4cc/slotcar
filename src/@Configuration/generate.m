@@ -16,29 +16,31 @@ end
 root = load_system(obj.RootModel);
 cd('distribution');
 
-try
-    % Open control model, that is the distribution model for Matlab PC.
-    if exist(obj.CtrlModel, 'file') ~= 4
-        model = new_system(obj.CtrlModel);
-    else
-        model = load_system(obj.CtrlModel);
-        set_param(obj.CtrlModel, 'SimulationCommand','stop');
-        Simulink.BlockDiagram.deleteContents(model);
-    end
-    subsys = add_block('built-in/Subsystem', ...
-                        strcat(obj.CtrlModel,'/subsystem'));
-
-    % Copy root data to control model
-    Simulink.BlockDiagram.copyContentsToSubsystem(root, subsys);
-    Simulink.BlockDiagram.expandSubsystem(subsys);
-
-    % Copy configuration set to control model
-    rootConfig = getActiveConfigSet(root);
-    config = attachConfigSetCopy(model, rootConfig, true);
-    setActiveConfigSet(model, config.name);
+try 
+    % Read the config set from root model
+    rootConfig = getActiveConfigSet(obj.RootModel);
     
-    % Save control model
-    save_system(model)
+    % copy the board subsystems to new models
+    for i = 1:length(obj.Boards)
+        % pick the name of the new model and close the existing model
+        boardModel = obj.Boards(i).ModelName;
+        close_system(boardModel, false);
+        
+        % copy the subsystem content to a new model
+        newModel = new_system;
+        modelToCopy = strcat(obj.RootModel, '/', boardModel);
+        Simulink.SubSystem.copyContentsToBlockDiagram(modelToCopy, newModel);
+        config = attachConfigSetCopy(newModel, rootConfig, true);
+        setActiveConfigSet(newModel, config.name);
+        
+        % save the new model
+        save_system(newModel, boardModel);
+        close_system(newModel);
+    end
+    
+    % Save root model copy as control model
+    close_system(obj.CtrlModel, false);
+    save_system(root, obj.CtrlModel)
 catch ME
     toc();
     cd(oldFolder);

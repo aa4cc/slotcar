@@ -17,7 +17,6 @@ classdef Configuration < handle
     end
     
     methods
-        gui(obj)
         distribute(obj)
         start(obj)
         stop(obj)  

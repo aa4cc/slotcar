@@ -1,9 +1,10 @@
-function createDeviceModels(obj, conf, directs)
+function udtBoardComms(obj, conf, directs)
 % CREATEDEVICEMODELS Creates a model for each specified subsystem to be
 % loaded on a board.
 
     port = obj.Port;
     Ts = obj.SampleTime;
+    load_system('libudt')
     
     for boardNum =1:length(conf.Boards)
         tic ();
@@ -13,20 +14,13 @@ function createDeviceModels(obj, conf, directs)
         modelHandle = getSimulinkBlockHandle(modelToReplace);
         
         % Open subsystem as new model
-        if exist (boardModel, 'file') ~= 4
-            sys = new_system(boardModel);
-        else
-            sys = load_system(boardModel);
-            Simulink.BlockDiagram.deleteContents(sys);            
-        end
-
-        % Copy contents from the subsystem in the root model
-        Simulink.SubSystem.copyContentsToBlockDiagram(modelToReplace, sys);
+        sys = load_system(boardModel);
+        %open_system(boardModel);
 
         %Copy configuration of root model
-        rootConfig = getActiveConfigSet(conf.RootModel);
-        config = attachConfigSetCopy(sys, rootConfig, true);
-        setActiveConfigSet(sys, config.name);
+%         rootConfig = getActiveConfigSet(conf.RootModel);
+%         config = attachConfigSetCopy(sys, rootConfig, true);
+%         setActiveConfigSet(sys, config.name);
 
         %Replace I/O ports with communication library blocks
         in = replace_block(sys, 'Inport', 'libudt/UDT Receiver', ...
@@ -67,10 +61,10 @@ function createDeviceModels(obj, conf, directs)
             set_param(bh, 'sampletime', num2str(Ts));
             port = port + 1;
         end
-
-        
-        save_system(sys);
+        %Simulink.BlockDiagram.arrangeSystem(sys);
+        close_system(sys, true);
         fprintf('@@@ Generated distribution model for %s\n', boardModel);
         toc();
     end
+    close_system('libudt')
 end

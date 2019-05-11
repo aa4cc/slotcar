@@ -1,15 +1,18 @@
-function topCommunication(obj, conf, directs)
+function nngControlComms(obj, conf, directs)
 % TOPCOMMUNICATION Replaces subsystems with  blocks of the communication
 % library for the top level scheme running in Matlab.
 
     port = obj.Port;
     Ts = obj.SampleTime;
     nd = length(conf.Boards);
-
+    % open the control model, done visibly because arrangement requires it
+    open_system(conf.CtrlModel);
+    load_system('libnng')
+    
     for i = 1:nd
         % Work with board subsystem model
         ip = conf.Boards(i).Ipv4;
-        model = strcat(conf.TopModel, '/', conf.Boards(i).ModelName);
+        model = strcat(conf.CtrlModel, '/', conf.Boards(i).ModelName);
         modelHandle = getSimulinkBlockHandle(model);
 
         % Delete lines inside the board subsystem in top level model
@@ -38,12 +41,10 @@ function topCommunication(obj, conf, directs)
 
             if ~isDirect
                 % Add block and set parameters
-                bh = add_block('libudt/UDT Sender', ...
+                bh = add_block('libnng/NNG Sender', ...
                                strcat(model, '/Send', string(inportNum)));
-                set_param(bh, 'hostaddress', ...
-                    string(sprintf ('''%s''', conf.MatlabIpv4)));
-                set_param(bh, 'hostport', ...
-                          string(sprintf ('''%u''', port)));
+                set_param(bh, 'hosturl', ...
+                          string(sprintf ('''tcp://:%u''',port)));
                 set_param(bh, 'sampletime', num2str(Ts));
                 
                 % Connect block to outport
@@ -64,12 +65,10 @@ function topCommunication(obj, conf, directs)
                             ([directs.targetPort] == inportNum));
             if ~isDirect
                 % Add block and set parameters
-                bh = add_block ('libudt/UDT Receiver', ...
+                bh = add_block ('libnng/NNG Receiver', ...
                                 strcat(model, '/Receive', string(outportNum)));
-                set_param(bh, 'hostaddress', ...
-                    string(sprintf ('''%s''', ip)));
-                set_param(bh, 'hostport', ...
-                          string(sprintf ('''%u''', port)));
+                set_param (bh, 'hosturl', ...
+                           string(sprintf ('''tcp://%s:%u''', ip, port)));
                 set_param (bh, 'sampletime', num2str(Ts));
 
                 % Connect block to inport
@@ -78,10 +77,14 @@ function topCommunication(obj, conf, directs)
                 add_line (model, ...
                           strcat('Receive', string(outportNum), '/1' ), ...
                           strcat(tmp, '/1'));
-
             end
             % Increment the port value for the next connection
             port = port + 1;
         end
+        % Finally automatically arrange the blocks inside the subsystem
+        Simulink.BlockDiagram.arrangeSystem(model);
     end
+    % close and save the control model
+    close_system(conf.CtrlModel, true);
+    close_system('libnng')
 end

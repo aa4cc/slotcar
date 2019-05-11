@@ -8,24 +8,23 @@ classdef UdtBackend < comms.interface.Backend
     methods
         function createDistributionModels(obj, conf)
             import comms.common.getDirectConnections
-            load_system(conf.TopModel)
 
             % Check for direct target to target connection
-            directs = conf.getDirectConnections;
+            directs = getDirectConnections(conf);
 
-            % Replace subsystem content with comunication blocks in the top
-            % model
-            topCommunication(obj, conf, directs); 
-            save_system(conf.TopModel);
+            % Replace subsystem content with comunication blocks in the 
+            % control model
+            udtControlComms(obj, conf, directs); 
             
             % Move subsystem content to separate models with matching
             % communication blocks
-            createDeviceModels(obj, conf, directs);
+            udtBoardComms(obj, conf, directs);
         end
     end
     
     methods (Access = protected)
-
+        udtBoardComms(obj, conf, directs)
+        udtControlComms(obj, conf, directs)
     end
 end
 

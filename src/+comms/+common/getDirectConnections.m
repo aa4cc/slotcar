@@ -3,8 +3,8 @@ function directs = getDirectConnections(obj)
 % directly without crossing blocks in top system.
 
     % Load the reference model and preallocate the output struct
-    load_system(obj.TopModel);
-    out = find_system(obj.TopModel, 'BlockType', 'Outport');
+    load_system(obj.CtrlModel);
+    out = find_system(obj.CtrlModel, 'BlockType', 'Outport');
     dim = numel(out);
     nd = length(obj.Boards);
     count = 0;
@@ -20,12 +20,12 @@ function directs = getDirectConnections(obj)
     targetHandles = ones(1, nd);
     for i = 1:nd
         targetHandles(i) = getSimulinkBlockHandle( ...
-            strcat(obj.TopModel, '/', obj.Boards(i).ModelName));
+            strcat(obj.CtrlModel, '/', obj.Boards(i).ModelName));
     end
     
     for i = 1:nd
         % Select board's subsystem in top level model
-        model = strcat(obj.TopModel, '/', obj.Boards(i).ModelName);
+        model = strcat(obj.CtrlModel, '/', obj.Boards(i).ModelName);
         m = find_system(model);
         
         % Get port connectivity detail, for info see 
