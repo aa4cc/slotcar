@@ -2,24 +2,22 @@ classdef BeagleBoard < handle
     %BEAGLEBOARD Class representing a Beaglebone Blue development board.
     %   Set of properties used to describe a board for which a separate
     %   model is generated. 
-    %
-    %   ModelName is the name of the subsystem block in which the board is 
-    %   implemented inside the design model. 
-    %
-    %   Ipv4 is the address which the board uses in a common network. 
-    %
-    %   Crucial is a boolean value indicating that the experiment should be 
-    %   terminated when the board cannot be connected to. 
-    %
-    %   External determines the mode in which the model is executed from
-    %   the board
     
     properties
+        % Name of the subsystem inside the root model and the name of the 
+        % distribution model after creation
         ModelName char
+        % IP address assigned to the board, best made static
         Ipv4 char
+        % Username of the linux user in the beaglebone
         LoginUser char = 'debian'
+        % Password of the linux user in the beaglebone
         LoginPwd char = 'temppwd'
+        % Logical value describing if the experiment can continue without
+        % the board present
         Crucial logical = false
+        % Logical value describing if the model of the board is run in
+        % external mode or not
         External logical = false
 
     end
@@ -30,7 +28,8 @@ classdef BeagleBoard < handle
                 b = beagleboneblue(obj.Ipv4, obj.LoginUser, obj.LoginPwd);
                 ok = true;
             catch ME
-               fprintf("@@@ Can't connect to %s\n%s\n", obj.Ipv4, ME.message); 
+               fprintf("@@@ Can't connect to %s\n%s\n", ...
+                        obj.Ipv4, ME.message); 
                b = beagleboneblue.empty;
                ok = ~obj.Crucial;
             end
@@ -40,9 +39,6 @@ classdef BeagleBoard < handle
             b = obj.connect();
             if ~isempty(b)
                 b.openShell();
-            else
-                warning(['@@@ Could not establish connection ' ...
-                         'to the BeagleBone'])
             end
         end
     end

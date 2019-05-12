@@ -55,6 +55,7 @@ function uploadDeviceModels(obj)
             % Compile model on board in normal mode
             % Parallel compilation does this without waiting for
             % compilation results
+            % TODO: rewrite the compile scripts as they were not maintained
             set_param(sys, 'SimulationMode', 'normal');
             if obj.ParallelCompilation
                 %set_param(sys, 'GenCodeOnly', 'on');

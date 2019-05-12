@@ -2,10 +2,8 @@
 	path = lib/nng
 	url = https://github.com/nanomsg/nng.git
 [submodule "udt-arm"]
-
 	path = lib/udt-arm
-
-	url = ../udt-arm.git
+	url = https://gitlab.fel.cvut.cz/wernisim/udt-arm.git
 [submodule "lib/librobotcontrol"]
 	path = lib/librobotcontrol
 	url = git@github.com:StrawsonDesign/librobotcontrol.git
