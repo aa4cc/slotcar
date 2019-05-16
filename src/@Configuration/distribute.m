@@ -1,9 +1,6 @@
 function distribute(obj)
-% DISTRIBUTE Send generated models to development boards and compile or
-% open models for inspection.
-%   Load device models to specified board where the external mode is not
-%   specified. When debugging is specified only open generated models 
-%   for inspection.
+% DISTRIBUTE Set important configuration variables, compile and send 
+% generated models to development boards.
 
     oldFolder = cd(fullfile(obj.Folder, 'distribution'));
     try
@@ -29,26 +26,31 @@ function uploadDeviceModels(obj)
 
     % Load each board model
     for i = 1:numel(obj.Boards)
-        % skip uncrucial unconnected boards
+        % Skip unconnected boards
         if isempty(beaglebones{i})
             continue;
         end
         
         tic();
-        boardModel = obj.Boards(i).ModelName;
+        board = obj.Boards(i);
+        boardModel = board.ModelName;
         
         % Open subsystem
         sys = load_system(boardModel);
 
-        % Pick connection to the board
+        % Open connection to the board, this sets the internal parameters
+        % of the package to the board's details
         ip = obj.Boards(i).Ipv4;
-        b = beaglebones{i};
+        b = obj.Boards(i).connect;
 
         % Distribute and compile models on boards
         if obj.Boards(i).External
             % set external mode and build the model
             set_param(sys, 'SimulationMode', 'external');
             rtwbuild(sys, 'generateCodeOnly', false);
+            if b.isModelRunning(boardModel)
+                b.stopModel(boardModel)
+            end
             fprintf("@@@ Loaded and connected external mode model %s\n",...
                 boardModel);
         else
@@ -86,6 +88,9 @@ function uploadDeviceModels(obj)
                 end
             else % normal compilation
                 rtwbuild(sys, 'generateCodeOnly', false);
+                if b.isModelRunning(boardModel)
+                    b.stopModel(boardModel)
+                end
             end
             fprintf("@@@ Built model %s at %s\n", boardModel, ip);
         end

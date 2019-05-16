@@ -8,7 +8,7 @@ tic();
 oldFolder = cd(obj.Folder); % work in folder specified by configuration
 
 % Create distribution folder for generated models
-if ~exist('distribution', 'dir')
+if ~exist(fullfile(pwd, 'distribution'), 'dir')
     mkdir('distribution');
 end
 

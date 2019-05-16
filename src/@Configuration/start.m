@@ -10,45 +10,58 @@ try
     end
 
     % Start each board model
-    parfor i = 1:numel(obj.Boards)
+    boards = obj.Boards;
+    openScopes = obj.OpenScopes;
+    parfor i = 1:numel(boards)
         if isempty(beaglebones{i})
             continue
         end
-        boardModel = obj.Boards(i).ModelName; %#ok
-        sys = load_system(boardModel);
+        b = beaglebones{i};
+        board = boards(i);
+        model = board.ModelName;
+        ip = board.Ipv4;
+        sys = load_system(model);
         try 
         % Open the board system and run in external mode
-        if obj.Boards(i).External
-            set_param(sys, 'SimulationCommand', 'start');
+        if board.External
             open_system(sys);
+            if openScopes
+                scopes = find_system(ctrl, 'BlockType', 'Scope');
+                for j = 1:numel(scopes)
+                    open_system(scopes{j});
+                end
+            end
+            % set_param(sys, 'SimulationCommand', 'start');
+            if ~isModelRunning(b, model)
+                runModel(b, model)
+            end
+            set_param(sys, 'SimulationCommand', 'connect');
         % Run the model compiled on the board silently
         else
-            if ~isModelRunning(b(i), sys)
-                runModel(b, boardModel)
-                fprintf('@@@ Running model %s', boardModel);
+            if ~isModelRunning(b, model)
+                runModel(b, model)
+                fprintf('@@@ Running model %s\n', model);
             else
-                fprintf('@@@ Model %s already running', boardModel);
+                fprintf('@@@ Model %s already running\n', model);
             end
         end
         catch ME
-                fprintf(['@@@ Could not stop model running at %s\n',...
-                 '@@@ Error message is:\n%s\n'], ip, ME.message);
+                warning(['@@@ Could not start model %s at %s\n',...
+                 '@@@ Error message is:\n%s\n'], model, ip, ME.message);
         end
     end
 
     % Open and start the control simulink model
-    ctrl = obj.CtrlModel;
-    fprintf('@@@ Running model %s', ctrl);
-    sys = load_model(ctrl);
-    open_model(sys);
+    sys = getSimulinkBlockHandle(obj.CtrlModel, true);
+    open_system(sys);
     set_param(sys, 'SimulationCommand', 'start');
-
-    % UNUSED: set "open at simulation start" in the scope instead
-    % % Open all scopes in this model
-    % scopes = find_system(ctrl, 'BlockType', 'Scope');
-    % for i = 1:numel(scopes)
-    %     open_system(scopes{i});
-    % end
+    
+    if openScopes
+        scopes = find_system(ctrl, 'BlockType', 'Scope');
+        for i = 1:numel(scopes)
+            open_system(scopes{i});
+        end
+    end
 catch ME
    cd(oldFolder);
    rethrow(ME);

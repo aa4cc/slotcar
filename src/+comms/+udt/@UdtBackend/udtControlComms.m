@@ -87,6 +87,7 @@ function udtControlComms(obj, conf, directs)
             port = port + 1;
         end
         % Finally automatically arrange the blocks inside the subsystem
+        open_system(model);
         Simulink.BlockDiagram.arrangeSystem(model);
     end
     % close and save the control model

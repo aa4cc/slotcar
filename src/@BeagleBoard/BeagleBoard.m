@@ -22,7 +22,33 @@ classdef BeagleBoard < handle
 
     end
     
+    properties(Access = private)
+        b beagleboneblue = beagleboneblue.empty
+    end
+    
     methods
+        function connected = isConnected(obj)
+            if isempty(obj.b)
+                connected = false;
+            else
+                try
+                    obj.b.system('echo connection test');
+                    connected = true;
+                catch
+                    connected = false;
+                end
+            end 
+        end
+        
+        function [b, ok] = reconnect(obj)
+            if obj.isConnected
+                b = obj.b;
+                ok = true;
+            else
+                [b, ok] = obj.connect;
+            end
+        end
+        
         function [b, ok] = connect(obj)
             try
                 b = beagleboneblue(obj.Ipv4, obj.LoginUser, obj.LoginPwd);
@@ -33,12 +59,17 @@ classdef BeagleBoard < handle
                b = beagleboneblue.empty;
                ok = ~obj.Crucial;
             end
+            obj.b = b;
         end
             
         function openShell(obj)
-            b = obj.connect();
-            if ~isempty(b)
-                b.openShell();
+            if ~obj.isConnected
+                board = obj.connect;
+                if ~isempty(board)
+                    board.openShell;
+                end
+            else
+                obj.b.openShell;
             end
         end
     end

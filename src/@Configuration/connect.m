@@ -5,7 +5,7 @@ function [beaglebones, isRunnable] = connect(obj)
 %   indicates for other scripts that a crucial board cannot be connected
 %   and experiment should be interrupted.
 
-[B, ok] = arrayfun(@(b) b.connect, obj.Boards, 'UniformOutput', false);
+[B, ok] = arrayfun(@(b) b.reconnect, obj.Boards, 'UniformOutput', false);
 beaglebones = B(~cellfun('isempty',B));
 isRunnable = all([ok{:}]);
 end
