@@ -1,4 +1,4 @@
-function nngBoardComms(obj, conf, directs)
+function nngBoardComms(obj, conf, directs, inportDims)
 % CREATEDEVICEMODELS Creates a model for each specified subsystem to be
 % loaded on a board.
 
@@ -39,8 +39,10 @@ function nngBoardComms(obj, conf, directs)
                           string(sprintf ('''tcp://%s:%u''', ...
                                           directs(I).sourceIpv4, port)));
             end
-            port = port + 1;
             set_param(in{portNum}, 'sampletime', num2str(Ts));
+            set_param(bh, 'datawidth', ...
+                num2str(inportDims{boardNum}(outportNum)));
+            port = port + 1;
         end
         
         % Set params of replaced outports
@@ -51,7 +53,6 @@ function nngBoardComms(obj, conf, directs)
             port = port + 1;
         end
 
-        
         save_system(sys);
         fprintf('@@@ Generated distribution model for %s\n', boardModel);
         toc();

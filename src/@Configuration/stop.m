@@ -33,7 +33,7 @@ try
     end
     
     % Stop the control model
-    sys = getSimulinkBlockHandle(obj.CtrlModel, true);
+    sys = load_system(obj.CtrlModel);
     set_param(sys, 'SimulationCommand', 'stop')
 catch ME
     cd(oldFolder);

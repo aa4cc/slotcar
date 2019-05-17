@@ -1,4 +1,4 @@
-function udtControlComms(obj, conf, directs)
+function udtControlComms(obj, conf, directs, outportDims)
 % TOPCOMMUNICATION Replaces subsystems with  blocks of the communication
 % library for the top level scheme running in Matlab.
 
@@ -9,10 +9,10 @@ function udtControlComms(obj, conf, directs)
     open_system(conf.CtrlModel);
     load_system('libudt')
     
-    for i = 1:nd
+    for boardNum = 1:nd
         % Work with board subsystem model
-        ip = conf.Boards(i).Ipv4;
-        model = strcat(conf.CtrlModel, '/', conf.Boards(i).ModelName);
+        ip = conf.Boards(boardNum).Ipv4;
+        model = strcat(conf.CtrlModel, '/', conf.Boards(boardNum).ModelName);
         modelHandle = getSimulinkBlockHandle(model);
         
         % Delete lines inside the board subsystem in top level model
@@ -74,14 +74,15 @@ function udtControlComms(obj, conf, directs)
                 set_param(bh, 'hostport', ...
                           string(sprintf ('''%u''', port)));
                 set_param (bh, 'sampletime', num2str(Ts));
-
+                set_param(bh, 'datawidth', ...
+                    num2str(outportDims{boardNum}(outportNum)));
                 % Connect block to inport
                 tmp = extractAfter (out{outportNum}, strcat(model,'/'));
                 %tmp = extractAfter (tmp, '/');
                 add_line (model, ...
                           strcat('Receive', string(outportNum), '/1' ), ...
                           strcat(tmp, '/1'));
-
+                
             end
             % Increment the port value for the next connection
             port = port + 1;

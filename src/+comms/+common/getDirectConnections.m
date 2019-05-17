@@ -17,11 +17,7 @@ function directs = getDirectConnections(obj)
         'targetIpv4', strings(1,dim) ); % ip of the target board
     
     % Read block handles for board subsystems  
-    targetHandles = ones(1, nd);
-    for i = 1:nd
-        targetHandles(i) = getSimulinkBlockHandle( ...
-            strcat(obj.CtrlModel, '/', obj.Boards(i).ModelName));
-    end
+    targetHandles = obj.getBoardTargetHandles();
     
     for i = 1:nd
         % Select board's subsystem in top level model
@@ -62,7 +58,7 @@ function directs = getDirectConnections(obj)
     if count > 0
         directs = directs(1:count);
     else
-        % create empty struct with same fields as directs and overwrites it
+        % create empty struct with same fields as directs and overwrite it
         f = fieldnames(directs)';
         f{2,1} = {};
         directs = struct(f{:});

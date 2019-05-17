@@ -52,7 +52,7 @@ try
     end
 
     % Open and start the control simulink model
-    sys = getSimulinkBlockHandle(obj.CtrlModel, true);
+    sys = load_system(obj.CtrlModel);
     open_system(sys);
     set_param(sys, 'SimulationCommand', 'start');
     

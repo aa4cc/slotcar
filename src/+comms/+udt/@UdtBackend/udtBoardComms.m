@@ -1,4 +1,4 @@
-function udtBoardComms(obj, conf, directs)
+function udtBoardComms(obj, conf, directs, inportDims)
 % CREATEDEVICEMODELS Creates a model for each specified subsystem to be
 % loaded on a board.
 
@@ -49,6 +49,8 @@ function udtBoardComms(obj, conf, directs)
             end
             port = port + 1;
             set_param(in{portNum}, 'sampletime', num2str(Ts));
+            set_param(bh, 'datawidth', ...
+                num2str(inportDims{boardNum}(outportNum)));
         end
         
         % Set params of replaced outports

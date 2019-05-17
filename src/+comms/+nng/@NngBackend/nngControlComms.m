@@ -1,4 +1,4 @@
-function nngControlComms(obj, conf, directs)
+function nngControlComms(obj, conf, directs, outportDims)
 % TOPCOMMUNICATION Replaces subsystems with  blocks of the communication
 % library for the top level scheme running in Matlab.
 
@@ -9,10 +9,10 @@ function nngControlComms(obj, conf, directs)
     open_system(conf.CtrlModel);
     load_system('libnng')
     
-    for i = 1:nd
+    for boardNum = 1:nd
         % Work with board subsystem model
-        ip = conf.Boards(i).Ipv4;
-        model = strcat(conf.CtrlModel, '/', conf.Boards(i).ModelName);
+        ip = conf.Boards(boardNum).Ipv4;
+        model = strcat(conf.CtrlModel, '/', conf.Boards(boardNum).ModelName);
         modelHandle = getSimulinkBlockHandle(model);
 
         % Delete lines inside the board subsystem in top level model
@@ -67,9 +67,12 @@ function nngControlComms(obj, conf, directs)
                 % Add block and set parameters
                 bh = add_block ('libnng/NNG Receiver', ...
                                 strcat(model, '/Receive', string(outportNum)));
-                set_param (bh, 'hosturl', ...
+                set_param(bh, 'hosturl', ...
                            string(sprintf ('''tcp://%s:%u''', ip, port)));
-                set_param (bh, 'sampletime', num2str(Ts));
+                set_param(bh, 'sampletime', num2str(Ts));
+                disp(outportDims{boardNum});
+                set_param(bh, 'datawidth', ...
+                    num2str(outportDims{boardNum}(outportNum)));
 
                 % Connect block to inport
                 tmp = extractAfter (out{outportNum}, strcat(model,'/'));
