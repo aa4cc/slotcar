@@ -41,7 +41,7 @@ function nngBoardComms(obj, conf, directs, inportDims)
             end
             set_param(in{portNum}, 'sampletime', num2str(Ts));
             set_param(bh, 'datawidth', ...
-                num2str(inportDims{boardNum}(outportNum)));
+                num2str(inportDims{boardNum}(portNum)));
             port = port + 1;
         end
         

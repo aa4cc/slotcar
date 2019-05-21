@@ -10,8 +10,6 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
     %#ok<*EMCA>
     
     properties
-        % Bus
-        Bus = 0;
         % Lowpass time constant 
         TC = 0.016;
     end
@@ -40,8 +38,7 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
                 % Call C-function implementing device initialization
                 coder.cinclude('vcnl4000.h');
                 % Call C-function implementing device initialization    
-                disp(obj.SampleTime)
-                coder.ceval('i2c_setup', obj.Bus, obj.getSampleTime, obj.TC);
+                coder.ceval('i2c_setup', obj.getSampleTime, obj.TC);
             end
         end
         
@@ -51,7 +48,7 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
                 % Place simulation output code here
             else
                 % Call C-function implementing device output
-                prox = coder.ceval('i2c_measure', obj.Bus);
+                prox = coder.ceval('i2c_measure');
             end
         end
         
@@ -60,7 +57,7 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
                 % Place simulation termination code here
             else
                 % Call C-function implementing device termination
-                coder.ceval('i2c_cleanup', obj.Bus);
+                coder.ceval('i2c_cleanup');
             end
         end
     end

@@ -12,13 +12,14 @@
 #define VCNL_RESULT_ADDR 0x87
 #define VCNL_CURRENT_ADDR 0x83
 #define VCNL_CURRENT_VAL 20
+#define VCNL_BUS 1
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-int i2c_setup(int bus, double dt, double tc);
-double i2c_measure(int bus);
-int i2c_cleanup(int bus); 
+int i2c_setup(double dt, double tc);
+double i2c_measure();
+int i2c_cleanup(); 
 #ifdef __cplusplus
 }
 #endif

@@ -47,7 +47,7 @@ function uploadDeviceModels(obj)
         if obj.Boards(i).External
             % set external mode and build the model
             set_param(sys, 'SimulationMode', 'external');
-            rtwbuild(sys, 'generateCodeOnly', false);
+            slbuild(sys);
             if b.isModelRunning(boardModel)
                 b.stopModel(boardModel)
             end
@@ -105,6 +105,8 @@ function uploadControlModel(obj)
 model = obj.CtrlModel;
 sys = load_system(model);
 set_param(sys,'SimulationMode','normal')
+set_param(model, 'EnablePacing', 'on');
+set_param(model, 'PacingRate', 1);
 if obj.DesktopExternalRT
     warning('@@@ Desktop external mode not yet supported.\n')
     %rtwbuild(sys, 'generateCodeOnly', false);

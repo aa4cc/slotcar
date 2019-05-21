@@ -46,22 +46,22 @@ try
             end
         end
         catch ME
-                warning(['@@@ Could not start model %s at %s\n',...
+                fprintf(['@@@ Could not start model %s at %s\n',...
                  '@@@ Error message is:\n%s\n'], model, ip, ME.message);
         end
     end
 
     % Open and start the control simulink model
     sys = load_system(obj.CtrlModel);
-    open_system(sys);
-    set_param(sys, 'SimulationCommand', 'start');
-    
     if openScopes
         scopes = find_system(ctrl, 'BlockType', 'Scope');
         for i = 1:numel(scopes)
             open_system(scopes{i});
         end
     end
+    open_system(sys);
+    set_param(sys, 'SimulationCommand', 'start');
+   
 catch ME
    cd(oldFolder);
    rethrow(ME);

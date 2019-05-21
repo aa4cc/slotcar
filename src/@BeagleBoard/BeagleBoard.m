@@ -15,7 +15,7 @@ classdef BeagleBoard < handle
         LoginPwd char = 'temppwd'
         % Logical value describing if the experiment can continue without
         % the board present
-        Crucial logical = false
+        Crucial logical = true
         % Logical value describing if the model of the board is run in
         % external mode or not
         External logical = false
@@ -54,10 +54,10 @@ classdef BeagleBoard < handle
                 b = beagleboneblue(obj.Ipv4, obj.LoginUser, obj.LoginPwd);
                 ok = true;
             catch ME
-               fprintf("@@@ Can't connect to %s\n%s\n", ...
-                        obj.Ipv4, ME.message); 
                b = beagleboneblue.empty;
                ok = ~obj.Crucial;
+               fprintf(['@@@ Could not stop model running at %s\n',...
+                     '@@@ Error message is:\n%s\n'], obj.Ipv4, ME.message);
             end
             obj.b = b;
         end

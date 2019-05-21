@@ -50,7 +50,7 @@ function udtBoardComms(obj, conf, directs, inportDims)
             port = port + 1;
             set_param(in{portNum}, 'sampletime', num2str(Ts));
             set_param(bh, 'datawidth', ...
-                num2str(inportDims{boardNum}(outportNum)));
+                num2str(inportDims{boardNum}(portNum)));
         end
         
         % Set params of replaced outports
