@@ -56,8 +56,7 @@ classdef BeagleBoard < handle
             catch ME
                b = beagleboneblue.empty;
                ok = ~obj.Crucial;
-               fprintf(['@@@ Could not stop model running at %s\n',...
-                     '@@@ Error message is:\n%s\n'], obj.Ipv4, ME.message);
+               fprintf('@@@ %s\n', ME.message);
             end
             obj.b = b;
         end

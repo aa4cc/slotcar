@@ -70,7 +70,6 @@ function nngControlComms(obj, conf, directs, outportDims)
                 set_param(bh, 'hosturl', ...
                            string(sprintf ('''tcp://%s:%u''', ip, port)));
                 set_param(bh, 'sampletime', num2str(Ts));
-                disp(outportDims{boardNum});
                 set_param(bh, 'datawidth', ...
                     num2str(outportDims{boardNum}(outportNum)));
 
@@ -89,6 +88,7 @@ function nngControlComms(obj, conf, directs, outportDims)
         Simulink.BlockDiagram.arrangeSystem(model);
     end
     % close and save the control model
+    open_system(conf.CtrlModel);
     close_system(conf.CtrlModel, true);
     close_system('libnng')
 end

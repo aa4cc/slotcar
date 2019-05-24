@@ -43,6 +43,11 @@ function uploadDeviceModels(obj)
         ip = obj.Boards(i).Ipv4;
         b = obj.Boards(i).connect;
 
+        % Set other important model properties
+        set_param(boardModel, 'AutoInsertRateTranBlk', 'on');
+        set_param(boardModel, 'SupportNonInlinedSFcns', 'on');
+        set_param(boardModel, 'GenerateReport', 'off');
+        
         % Distribute and compile models on boards
         if obj.Boards(i).External
             % set external mode and build the model
@@ -87,7 +92,7 @@ function uploadDeviceModels(obj)
                     end
                 end
             else % normal compilation
-                rtwbuild(sys, 'generateCodeOnly', false);
+                slbuild(sys);
                 if b.isModelRunning(boardModel)
                     b.stopModel(boardModel)
                 end
@@ -107,6 +112,8 @@ sys = load_system(model);
 set_param(sys,'SimulationMode','normal')
 set_param(model, 'EnablePacing', 'on');
 set_param(model, 'PacingRate', 1);
+set_param(model, 'AutoInsertRateTranBlk', 'on');
+set_param(model, 'SupportNonInlinedSFcns', 'on');
 if obj.DesktopExternalRT
     warning('@@@ Desktop external mode not yet supported.\n')
     %rtwbuild(sys, 'generateCodeOnly', false);

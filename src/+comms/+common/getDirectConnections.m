@@ -7,7 +7,7 @@ function directs = getDirectConnections(obj)
     out = find_system(obj.CtrlModel, 'BlockType', 'Outport');
     dim = numel(out);
     nd = length(obj.Boards);
-    count = 0;
+    count = 1;
     directs = struct( ... 
         'source', zeros(1,dim), ... % handle of the source block
         'target', zeros(1,dim), ... % handle of the target block
@@ -37,17 +37,17 @@ function directs = getDirectConnections(obj)
                     intersect(port(j).DstBlock, targetHandles);
                 if ~isempty(targets)
                     % Prepare indexes for found direct connections
-                    first = count + 1;
-                    last = first + numel(targets);
+                    first = count;
+                    last = count + numel(targets) - 1;
                     k = first : last;
 
                     % Fill the directs struct entries
-                    directs(k).source = targetHandles(i);
-                    directs(k).target = targets;
-                    directs(k).sourcePort = port(j).Type;
-                    directs(k).targetPort = port(j).DstPort(portIdx);
-                    directs(k).sourceIpv4 = obj.Boards(i).Ipv4;
-                    directs(k).targetIpv4 = obj.Boards(targetIdx).Ipv4;
+                    directs.source(k) = targetHandles(i);
+                    directs.target(k) = targets;
+                    directs.sourcePort(k) = port(j).Type;
+                    directs.targetPort(k) = port(j).DstPort(portIdx);
+                    directs.sourceIpv4(k) = obj.Boards(i).Ipv4;
+                    directs.targetIpv4(k) = obj.Boards(targetIdx).Ipv4;
                     count = last;
                 end
             end
@@ -56,7 +56,13 @@ function directs = getDirectConnections(obj)
     
     % Trim the overallocated directs struct to actual size
     if count > 0
-        directs = directs(1:count);
+        directs.source = directs.source(1:count);
+        directs.target = directs.target(1:count);
+        directs.sourcePort = directs.sourcePort(1:count);
+        directs.targetPort = directs.targetPort(1:count);
+        directs.sourceIpv4 = directs.sourceIpv4(1:count);
+        directs.targetIpv4 = directs.targetIpv4(1:count);
+
     else
         % create empty struct with same fields as directs and overwrite it
         f = fieldnames(directs)';

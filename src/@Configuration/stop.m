@@ -5,23 +5,14 @@ try
     % Stop the control model
     sys = load_system(obj.CtrlModel);
     set_param(sys, 'SimulationCommand', 'stop')
-    % Open SSH connections to all boards
-    beaglebones = obj.connect;
-    
-    if isempty(beaglebones)
-        return
-    end
     
     % Try to stop each board model
     boards = obj.Boards;
     parfor i = 1:numel(boards)
-        if isempty(beaglebones{i})
-            continue
-        end
-        b = beaglebones{i}
         board = boards(i);
         model = board.ModelName;
         ip = board.Ipv4;
+        b = board.reconnect;
         try
             % Stop model execution
             if board.External
