@@ -47,7 +47,7 @@ function nngControlComms(obj, conf, directs, outportDims)
                           string(sprintf ('''tcp://:%u''',port)));
                 set_param(bh, 'sampletime', num2str(Ts));
                 
-                % Connect block to outport
+                % Connect block to inport
                 tmp = extractAfter(in{inportNum}, strcat(model,'/'));
                 %tmp = extractAfter(tmp, '/');
                 add_line(model, ...
@@ -62,7 +62,7 @@ function nngControlComms(obj, conf, directs, outportDims)
         for outportNum = 1:numel(out)
             isDirect = ~isempty(directs) && ...
                         any(([directs.target] == modelHandle) & ...
-                            ([directs.targetPort] == inportNum));
+                            ([directs.targetPort] == outportNum));
             if ~isDirect
                 % Add block and set parameters
                 bh = add_block ('libnng/NNG Receiver', ...
@@ -73,7 +73,7 @@ function nngControlComms(obj, conf, directs, outportDims)
                 set_param(bh, 'datawidth', ...
                     num2str(outportDims{boardNum}(outportNum)));
 
-                % Connect block to inport
+                % Connect block to outport
                 tmp = extractAfter (out{outportNum}, strcat(model,'/'));
                 %tmp = extractAfter (tmp, '/');
                 add_line (model, ...
