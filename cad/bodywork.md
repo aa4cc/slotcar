@@ -7,4 +7,4 @@ The bodywork of the slotcar chassis is designed in Autodesk Fusion 360 and is ac
 Direct editting access must be given by the project maintainer. 
 These files could be added into this folder once the software allows any git integration or the project moves to a different tool.
 
-![Bodywork](images/bodywork.png)
+![Bodywork](../images/bodywork.png)
