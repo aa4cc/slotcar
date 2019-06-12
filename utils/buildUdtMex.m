@@ -34,7 +34,7 @@ function buildWithUdt(udtdir)
     
     % build
     p = simulinkproject;
-    oldFolder = cd(fullfile(p.RootFolder, 'work', 'build', 'udt'));
+    oldFolder = cd(fullfile(p.RootFolder, 'mex', 'udt'));
 
     try
     

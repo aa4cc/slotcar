@@ -34,7 +34,7 @@ function buildWithNNG(nngdir)
     
     % build
     p = simulinkproject;
-    oldFolder = cd(fullfile(p.RootFolder, 'work', 'build', 'nng'));
+    oldFolder = cd(fullfile(p.RootFolder, 'mex', 'nng'));
     
     try
         
