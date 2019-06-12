@@ -3,7 +3,7 @@ classdef MotorSysObject < realtime.internal.SourceSampleTime ...
         & matlab.system.mixin.Propagates ...
         & matlab.system.mixin.CustomIcon
     %
-    % System object block for i2c IR LED proximity sensor.
+    % System object block for control of motors.
     % 
 
     %#codegen
