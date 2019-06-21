@@ -10,8 +10,6 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
     %#ok<*EMCA>
     
     properties
-        % Lowpass time constant 
-        TC = 0.016;
     end
     
     properties (Nontunable)
@@ -38,7 +36,7 @@ classdef ProximitySysObject < realtime.internal.SourceSampleTime ...
                 % Call C-function implementing device initialization
                 coder.cinclude('vcnl4000.h');
                 % Call C-function implementing device initialization    
-                coder.ceval('i2c_setup', obj.getSampleTime, obj.TC);
+                coder.ceval('i2c_setup');
             end
         end
         
